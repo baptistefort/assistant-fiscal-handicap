@@ -773,6 +773,10 @@
     // Clé anon publique Supabase (JWT, rôle "anon"). Safe en front (RLS + service-role restent côté serveur).
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3cmJnYnZwemhwbnZycnR1Z3BuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMzI1ODksImV4cCI6MjA5MTkwODU4OX0.r_bLeBszGHL2H3S8LpUGCxDBEbQd5yQ3-VQZoEm6RO4";
 
+    // Historique conversationnel en mémoire (reset à chaque reload de page).
+    // Format : [{ role: 'user' | 'assistant', content: string }, ...]
+    const conversationHistory = [];
+
     // Session ID local (cross-message, pour consent store et groupement feedback).
     function safeUUID() {
       try {
@@ -1025,10 +1029,12 @@
 
     // =================== SEND ===================
     // Toutes les réponses (y compris salutations) passent par l'agent pour qu'il adapte lui-même le ton.
+    // L'historique est passé à l'Edge Function pour donner une vraie mémoire conversationnelle à Claude.
     async function sendQuestion(question) {
       if (!question || !question.trim()) return;
+      const q = question.trim();
       enterChatMode();
-      renderUserMessage(question);
+      renderUserMessage(q);
       input.value = "";
       sendBtn.disabled = true;
       renderTyping();
@@ -1042,9 +1048,11 @@
             "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
           },
           body: JSON.stringify({
-            question: question.trim(),
+            question: q,
             sessionId: SESSION_ID,
             profile: {},
+            // 10 derniers tours max, filtrés côté serveur aussi
+            history: conversationHistory.slice(-10),
           }),
         });
 
@@ -1059,6 +1067,13 @@
           return;
         }
         renderAssistantAnswer(data);
+
+        // Mémorise ce tour pour les prochaines questions
+        conversationHistory.push({ role: "user", content: q });
+        const assistantText = (data && data.answer && data.answer.answer) ? String(data.answer.answer) : "";
+        if (assistantText) {
+          conversationHistory.push({ role: "assistant", content: assistantText });
+        }
       } catch (e) {
         renderError(e && e.message ? e.message : "Appel impossible.");
       } finally {
