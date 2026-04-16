@@ -344,9 +344,10 @@
     line-height: 1.6;
   }
 
-  .answer-text { font-size: 14.5px; color: #1f2937; line-height: 1.6; }
-  .answer-text p { margin: 0 0 10px; }
-  .answer-text p:last-child { margin-bottom: 0; }
+  .answer-text { font-size: 14.5px; color: #1f2937; line-height: 1.65; }
+  .answer-text > *:first-child { margin-top: 0 !important; }
+  .answer-text > *:last-child  { margin-bottom: 0 !important; }
+  .answer-text p { margin: 0 0 12px; }
   .answer-text strong { font-weight: 600; color: #0f172a; }
   .answer-text em { font-style: italic; }
   .answer-text code {
@@ -356,6 +357,35 @@
     padding: 1px 6px;
     border-radius: 4px;
   }
+  .answer-text h5.answer-subhead {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 18px 0 6px;
+    letter-spacing: 0.1px;
+  }
+  .answer-text h5.answer-subhead::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: #2563eb;
+    border-radius: 2px;
+    margin-right: 8px;
+    vertical-align: -2px;
+  }
+  .answer-text ul.answer-list,
+  .answer-text ol.answer-list {
+    margin: 4px 0 12px 4px;
+    padding-left: 20px;
+  }
+  .answer-text ul.answer-list li,
+  .answer-text ol.answer-list li {
+    margin-bottom: 6px;
+    padding-left: 4px;
+  }
+  .answer-text ul.answer-list li::marker { color: #2563eb; }
+  .answer-text ol.answer-list li::marker { color: #2563eb; font-weight: 600; }
 
   .answer-section { margin-top: 18px; }
   .answer-section:first-child { margin-top: 0; }
@@ -835,29 +865,80 @@
         .replace(/'/g, "&#39;");
     }
 
-    // Supprime les marqueurs [S1], [S2] du texte et convertit le markdown basique
-    // (**gras**, sauts de ligne) en HTML propre. On n'affiche jamais les astérisques.
+    // Formateur robuste : supprime [S1][S2], convertit markdown, détecte les sous-titres
+    // inline que Claude insère (**Point clé : X**, **Option 1 —**, **Ce qu'il faut faire** :)
+    // et les transforme en vrais sous-paragraphes avec respiration verticale.
     function formatAnswerText(text) {
       if (!text) return "";
       let t = String(text)
+        .replace(/\r\n/g, "\n")
         .replace(/\s*\[S\d+\](?:\s*\[S\d+\])*/g, "")   // citations [S1][S2]
-        .replace(/\s{2,}(?!\n)/g, " ")                 // espaces multiples (pas les newlines)
         .trim();
 
-      // Échappe d'abord tout le HTML pour éviter toute injection
+      // --- Phase 1 : découpage des sous-titres inline ---
+      // Cas A : "...phrase. **Titre : xxx** contenu" → "...phrase.\n\n**Titre : xxx**\ncontenu"
+      //   (bold comportant un ':' à l'intérieur → c'est clairement un sous-titre)
+      t = t.replace(/([^\n])\s+(\*\*[^*\n]{3,100}:[^*\n]{0,60}\*\*)\s+(?=\S)/g, "$1\n\n$2\n");
+      //   idem si suivi immédiatement d'un ':' ou '—' dehors
+      t = t.replace(/([^\n])\s+(\*\*[^*\n]{3,80}\*\*)(\s*[:—])\s+(?=\S)/g, "$1\n\n$2$3 ");
+      // Cas B : "Option 1 —" / "Option 2 —" inline au milieu du texte
+      t = t.replace(/([^\n])\s+(\*\*Option\s+\d+[^*\n]{0,80}\*\*)/gi, "$1\n\n$2\n");
+      // Cas C : après un sous-titre ** ... ** suivi immédiatement de contenu, insère un \n
+      t = t.replace(/(\*\*[^*\n]+\*\*\s*[:—])\s+(?=[A-ZÉÀÈÊÎÔÛÇ])/g, "$1\n");
+
+      // --- Phase 2 : échappement HTML ---
       t = t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
-      // Puis convertit le markdown inline autorisé
+      // --- Phase 3 : markdown inline ---
       t = t
-        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")        // **gras** → <strong>
-        .replace(/(?<!\*)\*(?!\*)([^*\n]+?)\*(?!\*)/g, "<em>$1</em>") // *italique* → <em>
-        .replace(/`([^`\n]+?)`/g, "<code>$1</code>");            // `code` inline
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/(?<!\*)\*(?!\*)([^*\n]+?)\*(?!\*)/g, "<em>$1</em>")
+        .replace(/`([^`\n]+?)`/g, "<code>$1</code>");
 
-      // Sauts de ligne : double -> nouveau paragraphe, simple -> <br>
-      const paragraphs = t.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-      return paragraphs
-        .map(p => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
-        .join("");
+      // --- Phase 4 : découpage en blocs ---
+      //   une ligne vide OU un retour chariot sépare des paragraphes.
+      const rawBlocks = t.split(/\n+/).map(l => l.trim()).filter(Boolean);
+
+      // Agrégation : on détecte bullets (- / * / • / 1.) pour les grouper en <ul>/<ol>.
+      const out = [];
+      let listBuffer = null; // { type: 'ul'|'ol', items: [] }
+
+      const flushList = () => {
+        if (listBuffer) {
+          const tag = listBuffer.type;
+          out.push(`<${tag} class="answer-list">${listBuffer.items.map(i => `<li>${i}</li>`).join("")}</${tag}>`);
+          listBuffer = null;
+        }
+      };
+
+      for (const block of rawBlocks) {
+        const ulMatch = block.match(/^[-*•]\s+(.+)$/);
+        const olMatch = block.match(/^(\d+)[\.\)]\s+(.+)$/);
+
+        if (ulMatch) {
+          if (!listBuffer || listBuffer.type !== "ul") { flushList(); listBuffer = { type: "ul", items: [] }; }
+          listBuffer.items.push(ulMatch[1]);
+          continue;
+        }
+        if (olMatch) {
+          if (!listBuffer || listBuffer.type !== "ol") { flushList(); listBuffer = { type: "ol", items: [] }; }
+          listBuffer.items.push(olMatch[2]);
+          continue;
+        }
+        flushList();
+
+        // Ligne ne contenant QUE du gras (éventuellement avec ':') → sous-titre
+        if (/^<strong>[^<]{3,120}<\/strong>\s*[:—]?\s*$/.test(block)) {
+          const inner = block.replace(/<\/?strong>/g, "").replace(/\s*[:—]\s*$/, "");
+          out.push(`<h5 class="answer-subhead">${inner}</h5>`);
+          continue;
+        }
+        // Paragraphe normal
+        out.push(`<p>${block}</p>`);
+      }
+      flushList();
+
+      return out.join("");
     }
     // Alias rétrocompatibles
     const stripCitations = formatAnswerText;
