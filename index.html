@@ -818,14 +818,13 @@
         .replace(/'/g, "&#39;");
     }
 
-    // Transforme [S1], [S2] dans un texte en liens cliquables qui scrollent jusqu'à la source.
-    function linkifyCitations(text, scope) {
+    // Supprime les marqueurs [S1], [S2] du texte (on n'affiche plus les sources).
+    function stripCitations(text) {
       if (!text) return "";
-      const escaped = escapeHtml(text);
-      return escaped.replace(/\[(S\d+)\]/g, (_, id) =>
-        `<a href="#${scope}-${id}" class="src-ref" onclick="event.preventDefault();document.getElementById('${scope}-${id}')?.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('${scope}-${id}')?.classList.add('src-flash');setTimeout(()=>document.getElementById('${scope}-${id}')?.classList.remove('src-flash'),1200);">${id}</a>`
-      );
+      return escapeHtml(text.replace(/\s*\[S\d+\](?:\s*\[S\d+\])*/g, "").replace(/\s{2,}/g, " ").trim());
     }
+    // Conservé pour compat : alias.
+    const linkifyCitations = (t) => stripCitations(t);
 
     function riskClass(level) {
       switch ((level || "").toLowerCase()) {
@@ -957,16 +956,11 @@
       const boxesHtml = boxes.length
         ? `<div class="answer-section"><h4>Cases et formulaires</h4>
              ${boxes.map(b => {
-               const label    = b.label || "";
-               const cond     = b.condition || "";
-               const srcIds   = Array.isArray(b.source_ids) ? b.source_ids : [];
-               const refsHtml = srcIds.length
-                 ? `<div class="box-refs">Sources : ${srcIds.map(id => `<a href="#${scope}-${escapeHtml(id)}" class="src-ref" onclick="event.preventDefault();document.getElementById('${scope}-${escapeHtml(id)}')?.scrollIntoView({behavior:'smooth',block:'center'});">${escapeHtml(id)}</a>`).join(" ")}</div>`
-                 : "";
+               const label = b.label || "";
+               const cond  = b.condition || "";
                return `<div class="box-card">
                  <div class="box-label">${escapeHtml(label)}</div>
-                 <div class="box-condition">${linkifyCitations(cond, scope)}</div>
-                 ${refsHtml}
+                 <div class="box-condition">${stripCitations(cond)}</div>
                </div>`;
              }).join("")}
            </div>` : "";
@@ -983,22 +977,8 @@
              <ul>${docs.map(d => `<li>${linkifyCitations(d, scope)}</li>`).join("")}</ul>
            </div>` : "";
 
-      // --- Sources officielles (ancrages cliquables)
-      const sourcesHtml = sources.length
-        ? `<div class="answer-section"><h4>Sources officielles</h4>
-             <div class="sources-list">${sources.map(s => {
-               const url = s.url || "#";
-               const title = s.title || "Source";
-               const meta = [s.sourceType, s.section, s.locator, s.legalDomain].filter(Boolean).join(" · ");
-               return `<a class="source-item" id="${scope}-${escapeHtml(s.id || "")}" href="${escapeHtml(url)}" target="_blank" rel="noopener">
-                 <span class="source-badge">${escapeHtml(s.id || "S")}</span>
-                 <span class="source-body">
-                   <span class="source-title">${escapeHtml(title)}</span>
-                   ${meta ? `<span class="source-meta">${escapeHtml(meta)}</span>` : ""}
-                 </span>
-               </a>`;
-             }).join("")}</div>
-           </div>` : "";
+      // --- Sources officielles : retirées de l'affichage (reste envoyées au serveur pour traçabilité).
+      const sourcesHtml = "";
 
       // --- Bandeau revue humaine (uniquement si on a une VRAIE réponse fiscale ambiguë)
       const reviewHtml = (!lightMode && needsHuman)
@@ -1010,13 +990,8 @@
              </div>
            </div>` : "";
 
-      // --- Qualité retrieval : affichée uniquement quand on a réellement des sources
-      const retrievalHtml = lightMode ? "" : `
-        <div class="retrieval-meta">
-          <span>Moteur : Claude Sonnet 4.6 · ${sources.length} source${sources.length > 1 ? "s" : ""}</span>
-          ${retrieval.weak ? `<span style="color:#c2410c;">Retrieval faible</span>` : ``}
-          ${requestId ? `<span title="request_id">${escapeHtml(requestId.slice(0,8))}…</span>` : ``}
-        </div>`;
+      // --- Meta technique : retirée (on ne montre pas la techno ni le request_id).
+      const retrievalHtml = "";
 
       const card = document.createElement('div');
       card.className = 'msg msg-assistant';
