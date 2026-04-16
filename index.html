@@ -344,6 +344,19 @@
     line-height: 1.6;
   }
 
+  .answer-text { font-size: 14.5px; color: #1f2937; line-height: 1.6; }
+  .answer-text p { margin: 0 0 10px; }
+  .answer-text p:last-child { margin-bottom: 0; }
+  .answer-text strong { font-weight: 600; color: #0f172a; }
+  .answer-text em { font-style: italic; }
+  .answer-text code {
+    font-family: "SFMono-Regular", ui-monospace, Menlo, monospace;
+    font-size: 13px;
+    background: #f3f4f6;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
   .answer-section { margin-top: 18px; }
   .answer-section:first-child { margin-top: 0; }
   .answer-section h4 {
@@ -822,13 +835,33 @@
         .replace(/'/g, "&#39;");
     }
 
-    // Supprime les marqueurs [S1], [S2] du texte (on n'affiche plus les sources).
-    function stripCitations(text) {
+    // Supprime les marqueurs [S1], [S2] du texte et convertit le markdown basique
+    // (**gras**, sauts de ligne) en HTML propre. On n'affiche jamais les astérisques.
+    function formatAnswerText(text) {
       if (!text) return "";
-      return escapeHtml(text.replace(/\s*\[S\d+\](?:\s*\[S\d+\])*/g, "").replace(/\s{2,}/g, " ").trim());
+      let t = String(text)
+        .replace(/\s*\[S\d+\](?:\s*\[S\d+\])*/g, "")   // citations [S1][S2]
+        .replace(/\s{2,}(?!\n)/g, " ")                 // espaces multiples (pas les newlines)
+        .trim();
+
+      // Échappe d'abord tout le HTML pour éviter toute injection
+      t = t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+      // Puis convertit le markdown inline autorisé
+      t = t
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")        // **gras** → <strong>
+        .replace(/(?<!\*)\*(?!\*)([^*\n]+?)\*(?!\*)/g, "<em>$1</em>") // *italique* → <em>
+        .replace(/`([^`\n]+?)`/g, "<code>$1</code>");            // `code` inline
+
+      // Sauts de ligne : double -> nouveau paragraphe, simple -> <br>
+      const paragraphs = t.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+      return paragraphs
+        .map(p => `<p>${p.replace(/\n/g, "<br/>")}</p>`)
+        .join("");
     }
-    // Conservé pour compat : alias.
-    const linkifyCitations = (t) => stripCitations(t);
+    // Alias rétrocompatibles
+    const stripCitations = formatAnswerText;
+    const linkifyCitations = formatAnswerText;
 
     function riskClass(level) {
       switch ((level || "").toLowerCase()) {
@@ -937,12 +970,13 @@
              </span>` : ""}
            </div>` : "";
 
-      // --- Réponse (avec citations [S1] cliquables).
+      // --- Réponse : markdown -> HTML propre (gras, paragraphes), pas d'astérisques affichés.
       //     En mode léger, pas de h4 "Réponse" : juste le texte, comme une réponse conversationnelle.
+      const formattedAnswer = formatAnswerText(answer.answer || "");
       const answerHtml = answer.answer
         ? (lightMode
-            ? `<p style="font-size:14.5px; color:#1f2937; line-height:1.6;">${linkifyCitations(answer.answer, scope)}</p>`
-            : `<div class="answer-section"><h4>Réponse</h4><p>${linkifyCitations(answer.answer, scope)}</p></div>`)
+            ? `<div class="answer-text">${formattedAnswer}</div>`
+            : `<div class="answer-section"><h4>Réponse</h4><div class="answer-text">${formattedAnswer}</div></div>`)
         : "";
 
       // --- Questions de clarification (uniquement si on a une vraie réponse partielle avec manque)
@@ -984,15 +1018,8 @@
       // --- Sources officielles : retirées de l'affichage (reste envoyées au serveur pour traçabilité).
       const sourcesHtml = "";
 
-      // --- Bandeau revue humaine (uniquement si on a une VRAIE réponse fiscale ambiguë)
-      const reviewHtml = (!lightMode && needsHuman)
-        ? `<div class="human-review">
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-             <div>
-               <strong>À faire valider par votre CGP</strong>
-               ${answer.human_review_reason ? ` — ${escapeHtml(answer.human_review_reason)}` : " — ce cas présente des subtilités qui justifient une revue humaine avant d'agir."}
-             </div>
-           </div>` : "";
+      // --- Bandeau revue humaine : retiré de l'UI (la logique reste côté serveur pour la review_queue).
+      const reviewHtml = "";
 
       // --- Meta technique : retirée (on ne montre pas la techno ni le request_id).
       const retrievalHtml = "";
