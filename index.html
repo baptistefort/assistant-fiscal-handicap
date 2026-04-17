@@ -1105,8 +1105,12 @@
         .replace(/\r\n/g, "\n")
         .replace(/\s*\[S\d+\](?:\s*\[S\d+\])*/g, "")   // citations [S1][S2]
         // Nettoyage des tirets utilisés comme connecteurs : " — " et " – " → ", "
-        // Les tirets dans les mots composés (ex. "non-résident") sont préservés.
         .replace(/\s+[—–]\s+/g, ", ")
+        // Tirets « - » en début de ligne (puces bâtardes) : on les enlève pour
+        // éviter les demi-listes du style "\n- item\n- item" glissant de Claude.
+        .replace(/(^|\n)\s*[-•]\s+/g, "$1")
+        // Lignes vides multiples compactées
+        .replace(/\n{3,}/g, "\n\n")
         .trim();
 
       // --- Phase 1 : découpage des sous-titres inline ---
@@ -1261,21 +1265,17 @@
       const requestId  = payload.requestId || "";
       const scope      = `req-${requestId.slice(0,8) || Math.random().toString(36).slice(2,8)}`;
 
-      // En mode guidé, on FORCE un affichage minimal : uniquement le texte de la réponse
-      // (ton conversationnel) + feedback. Pas de sections listées, pas de diagnostic,
-      // pas de revue humaine visible.
-      let boxes   = Array.isArray(answer.boxes_or_forms) ? answer.boxes_or_forms : [];
-      let checks  = Array.isArray(answer.required_checks) ? answer.required_checks : [];
-      let docs    = Array.isArray(answer.supporting_documents) ? answer.supporting_documents : [];
-      let missing = Array.isArray(answer.missing_information) ? answer.missing_information : [];
-      if (guided) {
-        boxes = []; checks = []; docs = []; missing = [];
-      }
+      // RÈGLE : on n'affiche JAMAIS les sections structurées (Cases / Points / Justificatifs).
+      // Toute l'info utile doit être intégrée directement dans le texte conversationnel.
+      // Les champs restent dans les données pour la traçabilité admin mais ne sont jamais rendus.
+      const boxes   = [];
+      const checks  = [];
+      const docs    = [];
+      const missing = [];
 
-      // Mode "léger" : réponse conversationnelle / hors périmètre / sans substance fiscale
-      // Le mode guidé est aussi "light" par définition (on veut juste la prose).
-      const hasSubstance = !guided && (sources.length > 0 || boxes.length > 0 || checks.length > 0 || docs.length > 0);
-      const lightMode    = !hasSubstance;
+      // Mode toujours "léger" : la réponse est toujours conversationnelle.
+      const hasSubstance = false;
+      const lightMode    = true;
 
       // --- Diagnostic uniquement (badge "Risque élevé" retiré de l'UI :
       //     il était ambigu côté utilisateur, la logique reste côté serveur
@@ -1602,7 +1602,7 @@
     const TREE = {
       welcome: {
         path: "",
-        intro: "Bonjour 👋 Je suis l'assistant fiscal de **Brice & Morgan**, spécialisé dans la déclaration **IR 2026** (revenus 2025) pour les situations de **handicap, invalidité, tutelle, curatelle et aidants**.\n\nPour vous accompagner simplement, dites-moi par où vous voulez commencer :",
+        intro: "Bonjour, je suis votre assistant fiscal, spécialisé dans la déclaration IR 2026 pour les situations de handicap, invalidité, tutelle, curatelle et aidants.\n\nPour vous accompagner simplement, dites-moi par où vous voulez commencer :",
         options: [
           { icon: "👤", label: "Je déclare pour moi",            sub: "Handicap, invalidité, CMI, AAH, pension…",    next: "self" },
           { icon: "🤝", label: "Pour une personne que j'aide",    sub: "Enfant, parent, proche sous protection…",      next: "helping" },
