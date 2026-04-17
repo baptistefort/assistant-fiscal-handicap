@@ -1236,8 +1236,10 @@
       scrollToBottom();
     }
 
-    function renderAssistantAnswer(payload) {
+    function renderAssistantAnswer(payload, opts = {}) {
       removeTyping();
+
+      const { guided = false } = opts;
 
       const answer     = payload.answer || {};
       const sources    = Array.isArray(payload.sources) ? payload.sources : [];
@@ -1247,13 +1249,20 @@
       const requestId  = payload.requestId || "";
       const scope      = `req-${requestId.slice(0,8) || Math.random().toString(36).slice(2,8)}`;
 
-      const boxes   = Array.isArray(answer.boxes_or_forms) ? answer.boxes_or_forms : [];
-      const checks  = Array.isArray(answer.required_checks) ? answer.required_checks : [];
-      const docs    = Array.isArray(answer.supporting_documents) ? answer.supporting_documents : [];
-      const missing = Array.isArray(answer.missing_information) ? answer.missing_information : [];
+      // En mode guidé, on FORCE un affichage minimal : uniquement le texte de la réponse
+      // (ton conversationnel) + feedback. Pas de sections listées, pas de diagnostic,
+      // pas de revue humaine visible.
+      let boxes   = Array.isArray(answer.boxes_or_forms) ? answer.boxes_or_forms : [];
+      let checks  = Array.isArray(answer.required_checks) ? answer.required_checks : [];
+      let docs    = Array.isArray(answer.supporting_documents) ? answer.supporting_documents : [];
+      let missing = Array.isArray(answer.missing_information) ? answer.missing_information : [];
+      if (guided) {
+        boxes = []; checks = []; docs = []; missing = [];
+      }
 
       // Mode "léger" : réponse conversationnelle / hors périmètre / sans substance fiscale
-      const hasSubstance = sources.length > 0 || boxes.length > 0 || checks.length > 0 || docs.length > 0;
+      // Le mode guidé est aussi "light" par définition (on veut juste la prose).
+      const hasSubstance = !guided && (sources.length > 0 || boxes.length > 0 || checks.length > 0 || docs.length > 0);
       const lightMode    = !hasSubstance;
 
       // --- Diagnostic uniquement (badge "Risque élevé" retiré de l'UI :
@@ -1455,7 +1464,9 @@
           renderError(String(data.error));
           return;
         }
-        renderAssistantAnswer(data);
+        // On passe le flag guided à la fonction de rendu pour qu'elle choisisse
+        // un affichage minimal (juste la prose + feedback) en mode guidé.
+        renderAssistantAnswer(data, { guided });
 
         // Mémorise ce tour pour les prochaines questions
         conversationHistory.push({ role: "user", content: q });
