@@ -438,12 +438,21 @@
   /* ============================================================
      CHAT MODE (hides hero+suggestions, shows messages)
      ============================================================ */
-  .main.chat-mode { padding: 24px 32px 24px; align-items: stretch; }
-  .main.chat-mode .shell { padding-top: 0; flex: none; display: contents; }
+  .main.chat-mode { padding: 24px 32px 24px; align-items: center; }
+  .main.chat-mode .shell {
+    padding-top: 0;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 760px;
+    justify-content: flex-end;
+    gap: 14px;
+  }
   .main.chat-mode .hero,
   .main.chat-mode .suggestions,
   .main.chat-mode .trust-row { display: none; }
-  .main.chat-mode .composer { order: 2; margin-top: 16px; }
+  .main.chat-mode .composer { order: 2; margin-top: 8px; width: 100%; }
+  .main.chat-mode .chat-view { order: 1; width: 100%; }
 
   .chat-view {
     display: none;
@@ -507,7 +516,13 @@
     transition: border-color .2s;
   }
   .answer-card:hover { border-color: var(--hairline-strong); }
-  .intro-card { background: transparent; border-color: transparent; padding: 16px 22px 6px; }
+  .intro-card {
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    padding: 18px 22px;
+    border-radius: var(--radius-md);
+  }
+  .intro-card + .msg-assistant { margin-top: -4px; }
 
   .answer-text { font-size: 14.5px; color: var(--ink-soft); line-height: 1.65; letter-spacing: -0.005em; }
   .answer-text > *:first-child { margin-top: 0 !important; }
@@ -838,11 +853,27 @@
   .choice-card.selected::after { transform: scaleX(1); background: var(--bg-card); }
 
   .choice-icon {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1;
-    margin-bottom: 6px;
-    filter: saturate(0.3);
-    opacity: .85;
+    margin-bottom: 8px;
+    display: inline-flex;
+    width: 34px; height: 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--bg-soft);
+    border: 1px solid var(--hairline);
+    transition: all .2s var(--ease);
+  }
+  .choice-card:hover .choice-icon {
+    background: var(--ink);
+    border-color: var(--ink);
+    transform: scale(1.05);
+    filter: grayscale(1) invert(1) brightness(1.5);
+  }
+  .choice-card.selected .choice-icon {
+    background: var(--bg-card);
+    border-color: var(--bg-card);
   }
   .choice-label {
     font-size: 13.5px;
