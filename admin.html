@@ -373,6 +373,252 @@
   .kpi:nth-child(3) { animation-delay: .12s; }
   .kpi:nth-child(4) { animation-delay: .18s; }
 
+  /* ========== JOURNAL ========== */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .log-card {
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 132px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    cursor: pointer;
+    transition: border-color .2s, transform .2s var(--ease), box-shadow .2s;
+  }
+  .log-card:hover {
+    border-color: var(--hairline-strong);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 14px rgba(10,10,10,0.04);
+  }
+  .log-card.has-comment {
+    border-left: 3px solid var(--ink);
+    padding-left: 19px;
+  }
+  .log-card.has-down { border-left: 3px solid var(--danger); padding-left: 19px; }
+  .log-date {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .log-date .day { color: var(--ink); font-weight: 600; font-size: 13.5px; letter-spacing: -0.008em; }
+  .log-date .time { font-size: 11.5px; color: var(--faint); }
+  .log-date .ago { font-size: 11px; color: var(--muted); margin-top: 4px; font-weight: 500; }
+  .log-body { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .log-question {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: -0.006em;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .log-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .log-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 9px;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--bg-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    letter-spacing: 0;
+  }
+  .log-chip.turns { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .log-chip.scenario { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .log-chip.scenario-unknown { color: var(--faint); }
+  .log-chip.review { color: var(--warn); background: var(--warn-soft); border-color: #fcd34d; }
+  .log-comment-preview {
+    display: block;
+    margin-top: 4px;
+    padding: 8px 12px;
+    background: var(--bg-soft);
+    border-left: 2px solid var(--ink);
+    border-radius: 0 8px 8px 0;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+    line-height: 1.45;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: -0.004em;
+  }
+  .log-comment-preview::before { content: '"'; color: var(--faint); margin-right: 2px; }
+  .log-comment-preview::after { content: '"'; color: var(--faint); margin-left: 2px; }
+  .log-feedback {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .log-feedback .chip-fb {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .log-feedback .chip-fb.up { background: var(--success-soft); color: var(--success); }
+  .log-feedback .chip-fb.down { background: var(--danger-soft); color: var(--danger); }
+  .log-feedback .chip-fb.none { background: transparent; color: var(--faint); font-weight: 500; font-style: italic; }
+
+  /* ========== DETAIL PANEL ========== */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.3);
+    backdrop-filter: blur(4px);
+    display: none;
+    z-index: 50;
+    animation: fadeIn .2s var(--ease);
+  }
+  .detail-overlay.active { display: block; }
+  .detail-panel {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(680px, 95vw);
+    background: var(--bg-card);
+    border-left: 1px solid var(--hairline);
+    z-index: 51;
+    transform: translateX(100%);
+    transition: transform .32s var(--ease);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -20px 0 40px rgba(0,0,0,0.06);
+  }
+  .detail-overlay.active .detail-panel { transform: translateX(0); }
+  .detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--hairline);
+    flex-shrink: 0;
+  }
+  .detail-title { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .detail-title h2 {
+    font-size: 15.5px;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .detail-title .sub { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .detail-close {
+    width: 32px; height: 32px;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    display: grid; place-items: center;
+    transition: all .15s;
+    margin-left: 16px;
+  }
+  .detail-close:hover { border-color: var(--ink); color: var(--ink); }
+  .detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 28px 40px;
+    scrollbar-width: none;
+  }
+  .detail-body::-webkit-scrollbar { display: none; }
+
+  .turn {
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    background: var(--bg-soft);
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    transition: border-color .2s;
+  }
+  .turn:hover { border-color: var(--hairline-strong); }
+  .turn.has-up { border-left: 3px solid var(--success); padding-left: 13px; }
+  .turn.has-down { border-left: 3px solid var(--danger); padding-left: 13px; }
+  .turn-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .turn-head strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .turn-head .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); }
+  .turn-q {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
+  .turn-meta { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .turn-meta span {
+    font-size: 10.5px;
+    color: var(--muted);
+    background: var(--bg-card);
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .turn-fb {
+    margin-top: 10px;
+    padding: 10px 13px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--hairline);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .turn-fb .fb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .turn-fb .fb-badge.up { background: var(--success-soft); color: var(--success); }
+  .turn-fb .fb-badge.down { background: var(--danger-soft); color: var(--danger); }
+  .turn-fb .fb-cat { color: var(--muted); font-size: 11.5px; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .turn-fb .fb-msg {
+    display: block;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--hairline);
+    color: var(--ink);
+    font-style: italic;
+    line-height: 1.55;
+  }
+  .turn-fb .fb-msg::before { content: '« '; color: var(--faint); }
+  .turn-fb .fb-msg::after { content: ' »'; color: var(--faint); }
+
   @media (max-width: 1100px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .two-col { grid-template-columns: 1fr; }
@@ -425,9 +671,14 @@
     </div>
 
     <div class="nav-section-title">Tableau de bord</div>
-    <button class="nav-btn active">
+    <button class="nav-btn active" data-section="stats">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Statistiques
+    </button>
+    <button class="nav-btn" data-section="journal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+      Journal
+      <span style="margin-left:auto;font-size:11px;color:var(--faint);font-weight:500;font-variant-numeric:tabular-nums;" id="journal-count">—</span>
     </button>
 
     <div class="nav-spacer"></div>
@@ -449,6 +700,9 @@
   </aside>
 
   <main class="admin-main">
+
+  <!-- ========== SECTION STATS ========== -->
+  <section class="section active" id="section-stats">
     <!-- Head -->
     <div class="page-head">
       <div>
@@ -591,7 +845,63 @@
         <div class="sub">Auto-refresh toutes les 60 s</div>
       </div>
     </div>
+  </section>
+
+  <!-- ========== SECTION JOURNAL ========== -->
+  <section class="section" id="section-journal">
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">Journal</h1>
+        <div class="page-subtitle">Toutes les conversations utilisateurs avec leurs feedbacks et commentaires.</div>
+      </div>
+      <div class="head-actions">
+        <div class="period-toggle" id="journal-filter-toggle" style="margin-right:8px;">
+          <button data-filter="all" class="active">Toutes</button>
+          <button data-filter="thumbs">Avec 👍👎</button>
+          <button data-filter="comments">Avec commentaire</button>
+          <button data-filter="down">👎 seulement</button>
+        </div>
+        <div class="search-box" style="min-width:240px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="search-journal" placeholder="Rechercher…" />
+        </div>
+        <button class="icon-btn" id="refresh-journal" aria-label="Actualiser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 19 5.4L23 9"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI row condensé -->
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-lbl">Sessions</div><div class="kpi-val" id="j-total">—</div><div class="kpi-footer" id="j-total-sub">30 derniers jours</div></div>
+      <div class="kpi"><div class="kpi-lbl">Pouces verts</div><div class="kpi-val" id="j-up" style="color:var(--success);">—</div><div class="kpi-footer">Satisfaction exprimée</div></div>
+      <div class="kpi"><div class="kpi-lbl">Pouces rouges</div><div class="kpi-val" id="j-down" style="color:var(--danger);">—</div><div class="kpi-footer">Retours négatifs</div></div>
+      <div class="kpi"><div class="kpi-lbl">Commentaires</div><div class="kpi-val" id="j-comments">—</div><div class="kpi-footer">Messages laissés par les utilisateurs</div></div>
+    </div>
+
+    <div id="journal-loading" class="empty-state">Chargement des conversations…</div>
+    <div class="log-list" id="log-list" style="display:none;"></div>
+    <div class="empty-state" id="journal-empty" style="display:none;"><h3 style="color:var(--ink);font-size:15px;margin-bottom:4px;">Aucune conversation</h3><p>Aucune session ne correspond aux filtres.</p></div>
+
+  </section>
+
   </main>
+</div>
+
+<!-- ========== SESSION DETAIL PANEL ========== -->
+<div class="detail-overlay" id="detail-overlay">
+  <aside class="detail-panel">
+    <div class="detail-head">
+      <div class="detail-title">
+        <h2 id="detail-title">Session</h2>
+        <div class="sub" id="detail-sub">—</div>
+      </div>
+      <button class="detail-close" id="detail-close" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </aside>
 </div>
 
 <script>
@@ -1064,16 +1374,236 @@
     return map[key] || key;
   }
 
-  // Period toggle
-  document.querySelectorAll('.period-toggle button').forEach(btn => {
+  // Period toggle (only the one in stats head)
+  document.querySelectorAll('#period-toggle button').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.period-toggle button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#period-toggle button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentPeriod = parseInt(btn.dataset.period, 10);
       loadDashboard();
     });
   });
   document.getElementById('refresh-btn').addEventListener('click', loadDashboard);
+
+  // ============================================================
+  //                      JOURNAL
+  // ============================================================
+  let journalSessions = [];
+  let currentFilter = "all";
+  let currentJournalSearch = "";
+
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "à l'instant";
+    if (mins < 60) return `il y a ${mins} min`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `il y a ${hours} h`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `il y a ${days} j`;
+    return '';
+  }
+
+  async function loadJournal() {
+    const loading = document.getElementById('journal-loading');
+    const list = document.getElementById('log-list');
+    const empty = document.getElementById('journal-empty');
+    loading.style.display = 'block';
+    list.style.display = 'none';
+    empty.style.display = 'none';
+    try {
+      const qs = "?action=conversations&limit=200" + (currentJournalSearch ? "&search=" + encodeURIComponent(currentJournalSearch) : "");
+      const data = await call(qs);
+      journalSessions = data.sessions || [];
+      renderJournal();
+    } catch (e) {
+      loading.style.display = 'none';
+      if (e.message === "unauthorized") showLogin("Session expirée.");
+      else { empty.innerHTML = '<h3 style="color:var(--ink);">Erreur</h3><p>' + escapeHtml(e.message) + '</p>'; empty.style.display = 'block'; }
+    }
+  }
+
+  function renderJournal() {
+    const loading = document.getElementById('journal-loading');
+    const list = document.getElementById('log-list');
+    const empty = document.getElementById('journal-empty');
+
+    // Filtre
+    let filtered = journalSessions.slice();
+    if (currentFilter === "thumbs") filtered = filtered.filter(s => (s.feedback?.up || 0) + (s.feedback?.down || 0) > 0);
+    else if (currentFilter === "comments") filtered = filtered.filter(s => (s.feedback?.comments || []).length > 0);
+    else if (currentFilter === "down") filtered = filtered.filter(s => (s.feedback?.down || 0) > 0);
+
+    // KPIs globaux
+    let totalUp = 0, totalDown = 0, totalComments = 0;
+    for (const s of journalSessions) {
+      totalUp += s.feedback?.up || 0;
+      totalDown += s.feedback?.down || 0;
+      totalComments += (s.feedback?.comments || []).length;
+    }
+    document.getElementById('j-total').textContent = fmtInt(journalSessions.length);
+    document.getElementById('j-up').textContent = fmtInt(totalUp);
+    document.getElementById('j-down').textContent = fmtInt(totalDown);
+    document.getElementById('j-comments').textContent = fmtInt(totalComments);
+    document.getElementById('journal-count').textContent = fmtInt(journalSessions.length);
+
+    loading.style.display = 'none';
+    if (filtered.length === 0) { empty.style.display = 'block'; return; }
+    list.style.display = 'flex';
+    list.innerHTML = filtered.map(renderLogRow).join('');
+    list.querySelectorAll('.log-card').forEach(el => {
+      el.addEventListener('click', () => openSessionDetail(el.dataset.sid));
+    });
+  }
+
+  function renderLogRow(s) {
+    const d = new Date(s.started_at);
+    const day = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const ago = timeAgo(s.last_at || s.started_at);
+    const up = s.feedback?.up || 0;
+    const down = s.feedback?.down || 0;
+    const comments = s.feedback?.comments || [];
+    const firstComment = comments[0]?.message;
+    const question = s.topic_snippet || '(sans texte)';
+    const mainScenario = (s.scenarios || [])[0] || 'unknown';
+    const scenarioLabel = prettyScenario(mainScenario);
+    const extraScenarios = (s.scenarios || []).length - 1;
+
+    let fbChips = '';
+    if (up > 0) fbChips += `<span class="chip-fb up">👍 ${up}</span>`;
+    if (down > 0) fbChips += `<span class="chip-fb down">👎 ${down}</span>`;
+    if (up === 0 && down === 0) fbChips = `<span class="chip-fb none">Sans retour</span>`;
+
+    const cardClass = [
+      'log-card',
+      down > 0 ? 'has-down' : '',
+      comments.length > 0 && down === 0 ? 'has-comment' : '',
+    ].filter(Boolean).join(' ');
+
+    return `
+      <div class="${cardClass}" data-sid="${escapeHtml(s.session_id)}">
+        <div class="log-date">
+          <span class="day">${escapeHtml(day)}</span>
+          <span class="time">${escapeHtml(time)}</span>
+          ${ago ? `<span class="ago">${escapeHtml(ago)}</span>` : ''}
+        </div>
+        <div class="log-body">
+          <div class="log-question">${escapeHtml(question)}</div>
+          <div class="log-meta">
+            <span class="log-chip turns">${s.turns} tour${s.turns > 1 ? 's' : ''}</span>
+            <span class="log-chip scenario ${mainScenario === 'unknown' ? 'scenario-unknown' : ''}">${escapeHtml(scenarioLabel)}</span>
+            ${extraScenarios > 0 ? `<span class="log-chip">+${extraScenarios}</span>` : ''}
+            ${s.needs_human_review ? '<span class="log-chip review">⚠ revue CGP</span>' : ''}
+          </div>
+          ${firstComment ? `<span class="log-comment-preview">${escapeHtml(firstComment)}</span>` : ''}
+        </div>
+        <div class="log-feedback">${fbChips}</div>
+      </div>
+    `;
+  }
+
+  // Detail panel
+  const detailOverlay = document.getElementById('detail-overlay');
+  const detailBody = document.getElementById('detail-body');
+  const detailTitle = document.getElementById('detail-title');
+  const detailSub = document.getElementById('detail-sub');
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  detailOverlay.addEventListener('click', (e) => { if (e.target === detailOverlay) closeDetail(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
+
+  async function openSessionDetail(sid) {
+    detailTitle.textContent = 'Chargement…';
+    detailSub.textContent = sid.slice(0, 8) + '…';
+    detailBody.innerHTML = '<div class="empty-state">Chargement…</div>';
+    detailOverlay.classList.add('active');
+    try {
+      const data = await call(`?action=session&session_id=${encodeURIComponent(sid)}`);
+      const events = data.events || [];
+      const sessionRow = journalSessions.find(s => s.session_id === sid);
+      detailTitle.textContent = (sessionRow?.topic_snippet || 'Session').slice(0, 80);
+      const startedIso = events[0]?.created_at;
+      const started = startedIso ? new Date(startedIso).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' }) : '—';
+      const totalFb = (sessionRow?.feedback?.up || 0) + (sessionRow?.feedback?.down || 0);
+      detailSub.textContent = `${events.length} tour${events.length > 1 ? 's' : ''} · débutée le ${started}${totalFb > 0 ? ' · ' + totalFb + ' feedback' + (totalFb > 1 ? 's' : '') : ''}`;
+
+      if (events.length === 0) {
+        detailBody.innerHTML = '<div class="empty-state"><h3 style="color:var(--ink);">Session vide</h3><p>Aucune requête enregistrée.</p></div>';
+        return;
+      }
+      detailBody.innerHTML = events.map((e, idx) => {
+        const d = new Date(e.created_at);
+        const time = d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const scenario = e.scenario_key || 'unknown';
+        const fb = e.feedback;
+        let fbHtml = '';
+        let turnClass = 'turn';
+        if (fb) {
+          if (fb.rating >= 4) turnClass += ' has-up';
+          else if (fb.rating <= 2) turnClass += ' has-down';
+          const badge = fb.rating >= 4 ? '<span class="fb-badge up">👍 positif</span>' : fb.rating <= 2 ? '<span class="fb-badge down">👎 négatif</span>' : '';
+          fbHtml = `
+            <div class="turn-fb">
+              ${badge}
+              ${fb.category ? `<span class="fb-cat">${escapeHtml(prettyCategory(fb.category))}</span>` : ''}
+              ${fb.message ? `<span class="fb-msg">${escapeHtml(fb.message)}</span>` : ''}
+            </div>`;
+        }
+        return `
+          <div class="${turnClass}">
+            <div class="turn-head">
+              <strong>Tour ${idx + 1}</strong>
+              <span class="dot"></span>
+              <span>${escapeHtml(time)}</span>
+            </div>
+            <div class="turn-q">${escapeHtml(e.question_text || '(question non enregistrée)')}</div>
+            <div class="turn-meta">
+              <span>${escapeHtml(prettyScenario(scenario))}</span>
+              <span>${e.source_count} source${e.source_count > 1 ? 's' : ''}</span>
+              ${e.latency_ms ? `<span>${e.latency_ms}ms</span>` : ''}
+              ${e.needs_human_review ? '<span style="color:var(--warn);border-color:#fcd34d;background:var(--warn-soft);">⚠ revue CGP</span>' : ''}
+            </div>
+            ${fbHtml}
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      detailBody.innerHTML = '<div class="empty-state"><h3 style="color:var(--ink);">Erreur</h3><p>' + escapeHtml(e.message) + '</p></div>';
+    }
+  }
+  function closeDetail() { detailOverlay.classList.remove('active'); }
+
+  // Nav switching
+  document.querySelectorAll('.nav-btn[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn[data-section]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const sec = btn.dataset.section;
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + sec).classList.add('active');
+      if (sec === 'journal') loadJournal();
+    });
+  });
+
+  // Journal filter + search + refresh
+  document.querySelectorAll('#journal-filter-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#journal-filter-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderJournal();
+    });
+  });
+  let journalSearchTimer;
+  document.getElementById('search-journal').addEventListener('input', (e) => {
+    clearTimeout(journalSearchTimer);
+    journalSearchTimer = setTimeout(() => {
+      currentJournalSearch = e.target.value.trim();
+      loadJournal();
+    }, 300);
+  });
+  document.getElementById('refresh-journal').addEventListener('click', loadJournal);
 
   // Logout
   document.getElementById('logout-btn').addEventListener('click', () => { clearToken(); showLogin(); });
