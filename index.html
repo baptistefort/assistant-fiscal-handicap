@@ -362,7 +362,16 @@
   .answer-text { font-size: 14.5px; color: #1f2937; line-height: 1.65; }
   .answer-text > *:first-child { margin-top: 0 !important; }
   .answer-text > *:last-child  { margin-bottom: 0 !important; }
-  .answer-text p { margin: 0 0 12px; }
+  .answer-text p { margin: 0 0 14px; }
+  /* Quand la réponse finit par une question (paragraphe commençant par un mot-clé en gras + ":"),
+     on renforce visuellement ce dernier paragraphe pour qu'il soit scannable. */
+  .answer-text p:last-child:has(strong:first-child) {
+    background: #eff6ff;
+    border-left: 3px solid #2563eb;
+    padding: 10px 14px;
+    border-radius: 0 10px 10px 0;
+    margin-top: 4px;
+  }
   .answer-text strong { font-weight: 600; color: #0f172a; }
   .answer-text em { font-style: italic; }
   .answer-text code {
@@ -1286,16 +1295,10 @@
             : `<div class="answer-section"><h4>Réponse</h4><div class="answer-text">${formattedAnswer}</div></div>`)
         : "";
 
-      // --- Questions de clarification (uniquement si on a une vraie réponse partielle avec manque)
+      // --- Questions de clarification : SUPPRIMÉ (retour testeur : duplication).
+      //     La question est désormais uniquement dans answer.answer (paragraphe 2 du format imposé).
       const canAnswer = answer.can_answer === true;
-      const clarificationsHtml = (!lightMode && !canAnswer && missing.length)
-        ? `<div class="answer-section"><h4>Informations manquantes</h4>
-             <div class="clar-list">${missing.map(m => `
-               <div class="clar-item" data-prefill="${escapeHtml(m)}">
-                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                 <span>${escapeHtml(m)}</span>
-               </div>`).join("")}</div>
-           </div>` : "";
+      const clarificationsHtml = "";
 
       // --- Cases / formulaires (boxes_or_forms = [{ label, condition, source_ids }])
       const boxesHtml = boxes.length
