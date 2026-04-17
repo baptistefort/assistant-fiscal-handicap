@@ -1562,7 +1562,26 @@
 
     // =================== FEEDBACK ===================
     // POST direct dans rag_feedback (anon a le droit INSERT).
-    async function submitFeedback({ rating, category, message, requestId, scenarioKey, sourceCount, needsHuman }) {
+    // Construit le payload feedback. Si includeSession=false, on omet le session_id
+    // (utilisé en fallback si la contrainte FK échoue la première tentative).
+    function buildFeedbackPayload({ rating, category, message, requestId, scenarioKey, sourceCount, needsHuman, includeSession = true }) {
+      const payload = {
+        request_id: requestId || null,
+        rating,
+        category,
+        message: message || null,
+        metadata: {
+          scenario_key: scenarioKey || null,
+          source_count: sourceCount || 0,
+          needs_human_review: !!needsHuman,
+          user_agent: navigator.userAgent.slice(0, 200),
+        },
+      };
+      if (includeSession) payload.session_id = SESSION_ID;
+      return payload;
+    }
+
+    async function doFeedbackPost(payload) {
       try {
         const res = await fetch(FEEDBACK_ENDPOINT, {
           method: "POST",
@@ -1572,25 +1591,38 @@
             "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
             "Prefer": "return=minimal",
           },
-          body: JSON.stringify({
-            request_id: requestId || null,
-            session_id: SESSION_ID,
-            rating: rating,
-            category: category,
-            message: message || null,
-            metadata: {
-              scenario_key: scenarioKey || null,
-              source_count: sourceCount || 0,
-              needs_human_review: !!needsHuman,
-              user_agent: navigator.userAgent.slice(0, 200),
-            },
-          }),
+          body: JSON.stringify(payload),
         });
-        return res.ok;
+        return { ok: res.ok, status: res.status };
       } catch (e) {
-        console.error("[feedback] failed", e);
-        return false;
+        console.error("[feedback] network failed", e);
+        return { ok: false, status: 0 };
       }
+    }
+
+    // Feedback robuste : 3 stratégies en cascade
+    // 1. POST normal (avec session_id)
+    // 2. Si 409 FK (session manquante) : retry sans session_id (feedback capturé quand même)
+    // 3. Si toujours échec : retry une fois après petit délai (résilience réseau)
+    async function submitFeedback(args) {
+      let result = await doFeedbackPost(buildFeedbackPayload(args));
+      if (result.ok) return true;
+
+      // 409 = Conflict (souvent FK violation sur session_id)
+      if (result.status === 409 || result.status === 400) {
+        console.warn("[feedback] retry without session_id (FK fallback)");
+        result = await doFeedbackPost(buildFeedbackPayload({ ...args, includeSession: false }));
+        if (result.ok) return true;
+      }
+
+      // Retry réseau après 400ms
+      await new Promise(r => setTimeout(r, 400));
+      result = await doFeedbackPost(buildFeedbackPayload(args));
+      if (result.ok) return true;
+
+      // Ultime fallback : sans session
+      result = await doFeedbackPost(buildFeedbackPayload({ ...args, includeSession: false }));
+      return result.ok;
     }
 
     // Modal pour le feedback négatif
