@@ -229,7 +229,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-    gap: 36px;
+    gap: 56px;
     position: relative;
     background:
       radial-gradient(1100px 520px at 50% -10%, rgba(10,10,10,0.035), transparent 55%),
@@ -256,8 +256,8 @@
 
   .shell {
     width: 100%;
-    max-width: 720px;
-    flex: 0 1 720px;
+    max-width: 880px;
+    flex: 0 1 880px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -267,7 +267,7 @@
 
   /* =========== SIDE PANELS (autour du chat, infos utiles) =========== */
   .side-panel {
-    flex: 0 0 228px;
+    flex: 0 0 216px;
     position: sticky;
     top: 60px;
     display: flex;
@@ -280,66 +280,71 @@
   }
   .side-panel::-webkit-scrollbar { display: none; }
   .panel-block {
-    background: var(--bg-card);
-    border: 1px solid var(--hairline);
-    border-radius: 14px;
-    padding: 16px 18px;
+    padding: 4px 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
   .panel-block-title {
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
-    margin-bottom: 12px;
+    margin: 0;
   }
-  .scope-group { margin-bottom: 14px; }
-  .scope-group:last-child { margin-bottom: 0; }
+  .scope-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
   .scope-label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 500;
-    margin-bottom: 8px;
+    gap: 8px;
+    font-size: 11.5px;
+    font-weight: 600;
     letter-spacing: -0.003em;
+    color: var(--ink);
   }
   .scope-label .ic {
-    width: 14px; height: 14px;
-    border-radius: 4px;
+    width: 16px; height: 16px;
+    border-radius: 5px;
     display: grid; place-items: center;
     flex-shrink: 0;
+    background: var(--ink);
+    color: #fff;
   }
-  .scope-label.in .ic { background: var(--ink); color: #fff; }
-  .scope-label.out .ic { background: var(--bg-soft); color: var(--muted); border: 1px solid var(--hairline); }
-  .scope-label.in { color: var(--ink); }
-  .scope-label.out { color: var(--muted); }
-  .scope-label .ic svg { width: 9px; height: 9px; stroke-width: 2.4; }
+  .scope-label .ic svg { width: 10px; height: 10px; stroke-width: 2.4; }
   .scope-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 1px;
+    border-left: 1px solid var(--hairline);
+    padding-left: 14px;
+    margin-left: 7px;
   }
   .scope-list li {
-    font-size: 12px;
+    font-size: 12.5px;
     color: var(--ink-soft);
-    padding: 3px 0;
-    letter-spacing: -0.004em;
-    line-height: 1.4;
+    padding: 5px 0;
+    letter-spacing: -0.005em;
+    line-height: 1.35;
+    position: relative;
   }
-  .scope-list.out li { color: var(--muted); }
-  .scope-help {
-    font-size: 11px;
-    color: var(--faint);
-    line-height: 1.5;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--hairline);
+  .scope-list li::before {
+    content: "";
+    position: absolute;
+    left: -17px;
+    top: 50%;
+    width: 6px;
+    height: 1px;
+    background: var(--hairline);
+    transform: translateY(-50%);
   }
-  .scope-help strong { color: var(--ink); font-weight: 500; }
 
   /* Shortcut questions cliquables */
   .shortcut-list { display: flex; flex-direction: column; gap: 6px; }
@@ -378,25 +383,29 @@
 
   .campaign-tag {
     display: inline-flex;
+    align-self: flex-start;
     align-items: center;
-    gap: 6px;
-    padding: 4px 8px 4px 7px;
-    background: var(--bg-soft);
+    gap: 7px;
+    padding: 5px 10px 5px 9px;
+    background: var(--bg-card);
     border: 1px solid var(--hairline);
     border-radius: 999px;
     font-size: 10.5px;
-    color: var(--muted);
+    font-weight: 500;
+    color: var(--ink-soft);
     letter-spacing: -0.003em;
-    margin-bottom: 10px;
+    margin: 0;
+    box-shadow: 0 1px 2px rgba(10,10,10,0.02);
   }
   .campaign-tag .live-d {
-    width: 5px; height: 5px;
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: var(--ink);
+    background: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14);
     animation: pulse 2.4s var(--ease) infinite;
   }
 
-  @media (max-width: 1180px) {
+  @media (max-width: 1240px) {
     .side-panel { display: none; }
     .main { gap: 0; }
   }
@@ -636,7 +645,7 @@
     flex: 1;
     min-height: 0;
     width: 100%;
-    max-width: 760px;
+    max-width: 880px;
     justify-content: flex-end;
     gap: 14px;
   }
@@ -665,7 +674,7 @@
     flex: 1;
     flex-direction: column;
     width: 100%;
-    max-width: 720px;
+    max-width: 880px;
     margin: 0 auto;
     min-height: 0;
   }
@@ -1421,16 +1430,16 @@
               <span class="live-d"></span>
               Campagne IR 2026 en cours
             </div>
-            <div class="panel-block-title">Périmètre de l'outil</div>
+            <div class="panel-block-title">Périmètre couvert</div>
 
             <div class="scope-group">
-              <div class="scope-label in">
+              <div class="scope-label">
                 <span class="ic">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </span>
-                Dans le périmètre
+                Situations prises en charge
               </div>
-              <ul class="scope-list in">
+              <ul class="scope-list">
                 <li>Handicap, CMI invalidité</li>
                 <li>AAH, pensions d'invalidité</li>
                 <li>Tutelle, curatelle, habilitation</li>
@@ -1439,25 +1448,6 @@
                 <li>Aide à domicile, CESU</li>
                 <li>Épargne-handicap</li>
               </ul>
-            </div>
-
-            <div class="scope-group">
-              <div class="scope-label out">
-                <span class="ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </span>
-                Hors périmètre
-              </div>
-              <ul class="scope-list out">
-                <li>Donations / successions</li>
-                <li>IFI</li>
-                <li>Plus-values immobilières</li>
-                <li>Assurance-vie</li>
-              </ul>
-            </div>
-
-            <div class="scope-help">
-              <strong>Sur ces sujets</strong>, orientez-vous vers un notaire ou un CGP.
             </div>
           </div>
         </aside>
