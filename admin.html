@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin · Feedback RAG — Brice &amp; Morgan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Google Sans", Helvetica, Arial, sans-serif;
+    background: #f6f7f9;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ====== LAYOUT ====== */
+  .page { min-height: 100vh; display: flex; flex-direction: column; }
+  .header {
+    background: #fff;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .header .brand {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .header .brand small {
+    color: #6b7280;
+    font-weight: 400;
+    margin-left: 12px;
+    font-size: 13px;
+  }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .logout-btn {
+    padding: 8px 14px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #6b7280;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .logout-btn:hover { background: #f9fafb; }
+
+  .main { flex: 1; padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+  /* ====== LOGIN SCREEN ====== */
+  .login-overlay {
+    position: fixed;
+    inset: 0;
+    background: #f6f7f9;
+    display: grid;
+    place-items: center;
+    z-index: 100;
+  }
+  .login-card {
+    background: #fff;
+    padding: 40px 44px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    max-width: 440px;
+    width: calc(100% - 40px);
+  }
+  .login-card h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .login-card p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .login-card label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .login-card input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+  .login-card input:focus { outline: none; border-color: #2563eb; }
+  .login-card button {
+    width: 100%;
+    padding: 12px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .login-card button:hover { background: #1d4ed8; }
+  .login-error {
+    padding: 10px 12px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #991b1b;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .login-error.show { display: block; }
+
+  /* ====== STATS ROW ====== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #fff;
+    padding: 18px 20px;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+  }
+  .stat-card .n {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+  }
+  .stat-card .lbl {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .stat-card.good .n { color: #059669; }
+  .stat-card.bad .n { color: #dc2626; }
+  .stat-card.blue .n { color: #2563eb; }
+  .stat-card.violet .n { color: #7c3aed; }
+
+  /* ====== FILTERS ====== */
+  .filters {
+    background: #fff;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filters label { font-size: 13px; color: #374151; font-weight: 500; }
+  .filters select, .filters input {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .filters .spacer { flex: 1; }
+  .filters .refresh {
+    padding: 8px 14px;
+    background: #0f172a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .filters .refresh:hover { background: #1e293b; }
+
+  /* ====== TABLE ====== */
+  .table-wrap {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead th {
+    background: #f9fafb;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  tbody td {
+    padding: 14px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+    color: #1f2937;
+    vertical-align: top;
+  }
+  tbody tr:hover { background: #fafbfc; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .rating-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 18px;
+    border: 2px solid;
+  }
+  .rating-chip.up   { background: #ecfdf5; border-color: #10b981; }
+  .rating-chip.down { background: #fef2f2; border-color: #ef4444; }
+  .rating-chip.mid  { background: #fffbeb; border-color: #f59e0b; }
+
+  .cat-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .cat-wrong-answer   { background: #fef2f2; color: #991b1b; }
+  .cat-missing-source { background: #fff7ed; color: #9a3412; }
+  .cat-unclear        { background: #fef9c3; color: #854d0e; }
+  .cat-needs-cgp-review { background: #ede9fe; color: #5b21b6; }
+  .cat-bug            { background: #e0f2fe; color: #075985; }
+  .cat-other          { background: #f3f4f6; color: #4b5563; }
+
+  .msg-cell {
+    max-width: 400px;
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.5;
+  }
+  .msg-cell .question {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+    padding: 6px 10px;
+    background: #f9fafb;
+    border-left: 3px solid #e5e7eb;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+  }
+
+  .meta-cell {
+    font-size: 11px;
+    color: #6b7280;
+  }
+  .meta-cell .id {
+    font-family: "SFMono-Regular", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    background: #f3f4f6;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-right: 6px;
+  }
+
+  .date-cell {
+    font-size: 12px;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+  .date-cell .t { font-size: 11px; opacity: 0.7; }
+
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #6b7280;
+  }
+  .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: #374151; }
+
+  .loading {
+    padding: 40px;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  /* ====== CHART ====== */
+  .chart-wrap {
+    background: #fff;
+    padding: 22px 24px;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+  }
+  .chart-wrap h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+  .chart {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    height: 140px;
+    padding: 10px 0;
+  }
+  .chart-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+  }
+  .chart-bar .stack {
+    display: flex;
+    flex-direction: column-reverse;
+    width: 100%;
+    height: 100%;
+    justify-content: flex-end;
+    gap: 1px;
+  }
+  .chart-bar .up-bar   { background: #10b981; border-radius: 3px 3px 0 0; min-height: 0; }
+  .chart-bar .down-bar { background: #ef4444; border-radius: 0; min-height: 0; }
+  .chart-bar .down-bar.has-up { border-radius: 0; }
+  .chart-bar .lbl {
+    font-size: 9px;
+    color: #9ca3af;
+    margin-top: 4px;
+    transform: rotate(-45deg);
+    white-space: nowrap;
+    transform-origin: center;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 16px;
+  }
+  .chart-legend .dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ======= LOGIN ======= -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card">
+      <h1>Accès admin · Feedback RAG</h1>
+      <p>Entrez le token d'administration. Il est stocké uniquement dans votre navigateur (localStorage) et envoyé via HTTPS à l'Edge Function.</p>
+      <div class="login-error" id="login-error">Token invalide ou erreur réseau.</div>
+      <form id="login-form">
+        <label for="admin-token">Token administrateur</label>
+        <input id="admin-token" type="password" autocomplete="current-password" placeholder="Entrez votre token…" required />
+        <button type="submit">Se connecter</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======= HEADER ======= -->
+  <header class="header" style="display:none;" id="app-header">
+    <div class="brand">
+      Admin · Feedback RAG <small>Brice &amp; Morgan · Pôle Handicap</small>
+    </div>
+    <div class="header-right">
+      <span id="last-refresh" style="font-size:12px; color:#9ca3af;"></span>
+      <button class="logout-btn" id="logout-btn">Se déconnecter</button>
+    </div>
+  </header>
+
+  <!-- ======= MAIN ======= -->
+  <main class="main" style="display:none;" id="app-main">
+
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card blue"><div class="n" id="s-total">—</div><div class="lbl">Feedbacks reçus</div></div>
+      <div class="stat-card good"><div class="n" id="s-positive">—</div><div class="lbl">👍 Utile</div></div>
+      <div class="stat-card bad"><div class="n" id="s-negative">—</div><div class="lbl">👎 À améliorer</div></div>
+      <div class="stat-card"><div class="n" id="s-rate">—</div><div class="lbl">Taux de feedback</div></div>
+      <div class="stat-card"><div class="n" id="s-avg">—</div><div class="lbl">Note moyenne</div></div>
+      <div class="stat-card violet"><div class="n" id="s-queries">—</div><div class="lbl">Requêtes totales</div></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrap">
+      <h3>Feedback sur les 30 derniers jours</h3>
+      <div class="chart" id="chart"></div>
+      <div class="chart-legend">
+        <span><span class="dot" style="background:#10b981;"></span>Utiles</span>
+        <span><span class="dot" style="background:#ef4444;"></span>À améliorer</span>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <label>Rating :</label>
+      <select id="f-rating">
+        <option value="">Tous</option>
+        <option value="5">Positif (5)</option>
+        <option value="1">Négatif (1)</option>
+      </select>
+
+      <label>Catégorie :</label>
+      <select id="f-category">
+        <option value="">Toutes</option>
+        <option value="wrong-answer">Réponse incorrecte</option>
+        <option value="missing-source">Source manquante</option>
+        <option value="unclear">Peu clair</option>
+        <option value="needs-cgp-review">Revue CGP</option>
+        <option value="bug">Bug</option>
+        <option value="other">Autre</option>
+      </select>
+
+      <div class="spacer"></div>
+      <button class="refresh" id="refresh-btn">Actualiser</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="loading" id="loading">Chargement…</div>
+      <table id="table" style="display:none;">
+        <thead>
+          <tr>
+            <th style="width:70px;">Note</th>
+            <th style="width:130px;">Catégorie</th>
+            <th>Question &amp; commentaire</th>
+            <th style="width:180px;">Contexte</th>
+            <th style="width:140px;">Date</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <h3>Aucun feedback</h3>
+        <p>Pas de feedback correspondant aux filtres actuels.</p>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<script>
+  const SUPABASE_URL = "https://vwrbgbvpzhpnvrrtugpn.supabase.co";
+  const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3cmJnYnZwemhwbnZycnR1Z3BuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMzI1ODksImV4cCI6MjA5MTkwODU4OX0.r_bLeBszGHL2H3S8LpUGCxDBEbQd5yQ3-VQZoEm6RO4";
+  const ADMIN_ENDPOINT = `${SUPABASE_URL}/functions/v1/admin-feedback`;
+  const TOKEN_KEY = "ph_admin_token";
+
+  // DOM refs
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginForm    = document.getElementById('login-form');
+  const loginError   = document.getElementById('login-error');
+  const tokenInput   = document.getElementById('admin-token');
+  const appHeader    = document.getElementById('app-header');
+  const appMain      = document.getElementById('app-main');
+  const logoutBtn    = document.getElementById('logout-btn');
+  const refreshBtn   = document.getElementById('refresh-btn');
+  const tableBody    = document.getElementById('table-body');
+  const tableEl      = document.getElementById('table');
+  const loadingEl    = document.getElementById('loading');
+  const emptyEl      = document.getElementById('empty-state');
+  const lastRefreshEl = document.getElementById('last-refresh');
+
+  function getToken() {
+    try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
+  }
+  function setToken(t) {
+    try { localStorage.setItem(TOKEN_KEY, t); } catch {}
+  }
+  function clearToken() {
+    try { localStorage.removeItem(TOKEN_KEY); } catch {}
+  }
+
+  async function callAdmin(qs) {
+    const token = getToken();
+    if (!token) return null;
+    const res = await fetch(`${ADMIN_ENDPOINT}${qs}`, {
+      method: "GET",
+      headers: {
+        "apikey": ANON_KEY,
+        "Authorization": `Bearer ${ANON_KEY}`,
+        "x-admin-token": token,
+      },
+    });
+    if (res.status === 401) {
+      throw new Error("unauthorized");
+    }
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    const date = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return { date, time };
+  }
+
+  function renderRow(fb) {
+    const rating = fb.rating || 0;
+    const chipClass = rating >= 4 ? 'up' : (rating <= 2 ? 'down' : 'mid');
+    const chipIcon  = rating >= 4 ? '👍' : (rating <= 2 ? '👎' : '·');
+
+    const catClass = 'cat-' + (fb.category || 'other');
+    const { date, time } = formatDate(fb.created_at);
+
+    const event = fb.event || {};
+    const questionText = event.question_text
+      ? `<div class="question">« ${escapeHtml(event.question_text).slice(0, 260)}${event.question_text.length > 260 ? '…' : ''} »</div>`
+      : '';
+
+    const message = fb.message
+      ? `<div>${escapeHtml(fb.message)}</div>`
+      : (rating >= 4 ? '<div style="color:#9ca3af; font-style:italic;">Pas de commentaire</div>' : '');
+
+    return `
+      <tr>
+        <td><span class="rating-chip ${chipClass}">${chipIcon}</span></td>
+        <td><span class="cat-chip ${catClass}">${escapeHtml(fb.category || 'other')}</span></td>
+        <td class="msg-cell">
+          ${questionText}
+          ${message}
+        </td>
+        <td class="meta-cell">
+          ${event.scenario_key ? `<div><span class="id">scenario</span>${escapeHtml(event.scenario_key)}</div>` : ''}
+          ${event.source_count !== undefined ? `<div><span class="id">sources</span>${event.source_count}</div>` : ''}
+          ${event.needs_human_review ? `<div style="color:#d97706; font-weight:600;">⚠️ Revue CGP</div>` : ''}
+          ${event.latency_ms ? `<div><span class="id">latence</span>${event.latency_ms} ms</div>` : ''}
+        </td>
+        <td class="date-cell">${escapeHtml(date)}<br/><span class="t">${escapeHtml(time)}</span></td>
+      </tr>
+    `;
+  }
+
+  function renderChart(byDay) {
+    const chart = document.getElementById('chart');
+    chart.innerHTML = '';
+    const days = [];
+    const today = new Date();
+    for (let i = 29; i >= 0; i -= 1) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      days.push({ key, day: d.getDate(), month: d.getMonth() + 1 });
+    }
+
+    let maxVal = 0;
+    for (const k in byDay) {
+      const v = (byDay[k].up || 0) + (byDay[k].down || 0);
+      if (v > maxVal) maxVal = v;
+    }
+    maxVal = Math.max(maxVal, 1);
+
+    for (const d of days) {
+      const b = byDay[d.key] || { up: 0, down: 0 };
+      const upH   = (b.up / maxVal) * 100;
+      const downH = (b.down / maxVal) * 100;
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.innerHTML = `
+        <div class="stack">
+          <div class="up-bar" style="height:${upH}%;" title="${b.up} 👍 le ${d.day}/${d.month}"></div>
+          <div class="down-bar ${b.up ? 'has-up' : ''}" style="height:${downH}%;" title="${b.down} 👎 le ${d.day}/${d.month}"></div>
+        </div>
+        <div class="lbl">${d.day}/${d.month}</div>
+      `;
+      chart.appendChild(bar);
+    }
+  }
+
+  async function loadStats() {
+    try {
+      const data = await callAdmin("?action=stats");
+      document.getElementById('s-total').textContent    = data.total;
+      document.getElementById('s-positive').textContent = data.positive;
+      document.getElementById('s-negative').textContent = data.negative;
+      document.getElementById('s-rate').textContent     = data.feedbackRate + " %";
+      document.getElementById('s-avg').textContent      = data.avgRating || "—";
+      document.getElementById('s-queries').textContent  = data.totalQueries;
+      renderChart(data.byDay || {});
+    } catch (e) {
+      if (e.message === "unauthorized") { showLogin("Token invalide."); }
+    }
+  }
+
+  async function loadFeedbacks() {
+    loadingEl.style.display = 'block';
+    tableEl.style.display = 'none';
+    emptyEl.style.display = 'none';
+
+    const rating = document.getElementById('f-rating').value;
+    const category = document.getElementById('f-category').value;
+    const params = new URLSearchParams({ action: 'list', limit: '200' });
+    if (rating) params.set('rating', rating);
+    if (category) params.set('category', category);
+
+    try {
+      const data = await callAdmin("?" + params.toString());
+      const rows = (data.feedbacks || []).map(renderRow).join("");
+      tableBody.innerHTML = rows;
+      loadingEl.style.display = 'none';
+      if (rows) {
+        tableEl.style.display = 'table';
+      } else {
+        emptyEl.style.display = 'block';
+      }
+      const now = new Date();
+      lastRefreshEl.textContent = `Mis à jour à ${now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}`;
+    } catch (e) {
+      loadingEl.style.display = 'none';
+      if (e.message === "unauthorized") { showLogin("Token invalide."); }
+      else { emptyEl.innerHTML = `<h3>Erreur</h3><p>${escapeHtml(e.message)}</p>`; emptyEl.style.display = 'block'; }
+    }
+  }
+
+  async function loadAll() {
+    await Promise.all([loadStats(), loadFeedbacks()]);
+  }
+
+  function showLogin(errorMsg) {
+    loginOverlay.style.display = 'grid';
+    appHeader.style.display = 'none';
+    appMain.style.display = 'none';
+    if (errorMsg) { loginError.textContent = errorMsg; loginError.classList.add('show'); }
+  }
+  function showApp() {
+    loginOverlay.style.display = 'none';
+    appHeader.style.display = 'flex';
+    appMain.style.display = 'block';
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = tokenInput.value.trim();
+    if (!token) return;
+    setToken(token);
+    loginError.classList.remove('show');
+    try {
+      await callAdmin("?action=stats");
+      showApp();
+      loadAll();
+    } catch (err) {
+      clearToken();
+      loginError.textContent = err.message === "unauthorized" ? "Token invalide." : "Erreur réseau.";
+      loginError.classList.add('show');
+    }
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    clearToken();
+    showLogin();
+  });
+
+  refreshBtn.addEventListener('click', loadAll);
+  document.getElementById('f-rating').addEventListener('change', loadFeedbacks);
+  document.getElementById('f-category').addEventListener('change', loadFeedbacks);
+
+  // Auto-login si token déjà présent
+  (async () => {
+    if (getToken()) {
+      try {
+        await callAdmin("?action=stats");
+        showApp();
+        loadAll();
+      } catch {
+        clearToken();
+        showLogin();
+      }
+    }
+  })();
+</script>
+
+</body>
+</html>

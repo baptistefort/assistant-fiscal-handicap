@@ -630,6 +630,130 @@
     white-space: nowrap;
   }
 
+  /* ============== FEEDBACK BAR ============== */
+  .feedback-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #eef0f3;
+  }
+  .fb-label {
+    font-size: 12.5px;
+    color: #6b7280;
+    margin-right: 4px;
+  }
+  .fb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    cursor: pointer;
+    transition: transform .12s, background .15s, border-color .15s;
+    font-size: 18px;
+    padding: 0;
+  }
+  .fb-btn:hover { transform: scale(1.1); }
+  .fb-btn.up:hover   { background: #ecfdf5; border-color: #10b981; }
+  .fb-btn.down:hover { background: #fef2f2; border-color: #ef4444; }
+  .fb-btn.up.active    { background: #10b981; border-color: #10b981; color: #fff; }
+  .fb-btn.down.active  { background: #ef4444; border-color: #ef4444; color: #fff; }
+  .fb-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .fb-status {
+    font-size: 12.5px;
+    color: #059669;
+    margin-left: 4px;
+    font-weight: 500;
+  }
+  .fb-status.err { color: #dc2626; }
+
+  /* ============== FEEDBACK MODAL ============== */
+  .fb-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  .fb-modal-overlay.active { display: flex; }
+  .fb-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px 30px;
+    max-width: 520px;
+    width: calc(100% - 40px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .fb-modal h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+  .fb-modal p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .fb-modal label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .fb-modal select,
+  .fb-modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+    margin-bottom: 14px;
+  }
+  .fb-modal select:focus,
+  .fb-modal textarea:focus { outline: none; border-color: #2563eb; }
+  .fb-modal textarea { resize: vertical; min-height: 80px; }
+  .fb-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  .fb-modal-btn {
+    padding: 9px 18px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .fb-modal-btn.cancel {
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #6b7280;
+  }
+  .fb-modal-btn.cancel:hover { background: #f9fafb; }
+  .fb-modal-btn.submit {
+    background: #2563eb;
+    color: #fff;
+  }
+  .fb-modal-btn.submit:hover { background: #1d4ed8; }
+
   .typing {
     display: inline-flex;
     align-items: center;
@@ -806,11 +930,38 @@
     </main>
   </div>
 
+  <!-- ======= MODAL FEEDBACK NÉGATIF ======= -->
+  <div class="fb-modal-overlay" id="fb-modal-overlay" aria-hidden="true">
+    <div class="fb-modal" role="dialog" aria-labelledby="fb-modal-title">
+      <h3 id="fb-modal-title">Votre retour nous aide à améliorer</h3>
+      <p>Qu'est-ce qui ne va pas dans cette réponse ? Vos précisions permettront à Brice et Morgan de corriger le système.</p>
+
+      <label for="fb-category">Catégorie</label>
+      <select id="fb-category">
+        <option value="wrong-answer">Réponse incorrecte ou trompeuse</option>
+        <option value="missing-source">Source manquante ou incomplète</option>
+        <option value="unclear">Réponse peu claire</option>
+        <option value="needs-cgp-review">Besoin d'une revue CGP</option>
+        <option value="bug">Bug d'affichage ou technique</option>
+        <option value="other">Autre</option>
+      </select>
+
+      <label for="fb-message">Votre commentaire (optionnel)</label>
+      <textarea id="fb-message" placeholder="Dites-nous ce qui ne va pas, la réponse attendue, ou tout détail utile…" maxlength="2000"></textarea>
+
+      <div class="fb-modal-actions">
+        <button type="button" class="fb-modal-btn cancel" id="fb-cancel">Annuler</button>
+        <button type="button" class="fb-modal-btn submit" id="fb-submit">Envoyer</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =================== CONFIG ===================
     // Endpoint public de l'Edge Function RAG (voir README du projet).
     const SUPABASE_URL = "https://vwrbgbvpzhpnvrrtugpn.supabase.co";
     const RAG_ENDPOINT = `${SUPABASE_URL}/functions/v1/rag-answer`;
+    // rag_feedback table : l'anon a un grant INSERT direct (RLS policy "feedback insert").
     const FEEDBACK_ENDPOINT = `${SUPABASE_URL}/rest/v1/rag_feedback`;
 
     // Clé anon publique Supabase (JWT, rôle "anon"). Safe en front (RLS + service-role restent côté serveur).
@@ -1105,6 +1256,17 @@
       // --- Meta technique : retirée (on ne montre pas la techno ni le request_id).
       const retrievalHtml = "";
 
+      // Barre de feedback : 2 boutons (pouce vert / rouge) + statut.
+      // Le rouge ouvre un modal pour préciser ce qui ne va pas.
+      const feedbackHtml = `
+        <div class="feedback-bar" data-request-id="${escapeHtml(requestId)}">
+          <span class="fb-label">Cette réponse vous a aidé ?</span>
+          <button type="button" class="fb-btn up" data-rating="5" title="Oui, utile">👍</button>
+          <button type="button" class="fb-btn down" data-rating="1" title="Non, à améliorer">👎</button>
+          <span class="fb-status"></span>
+        </div>
+      `;
+
       const card = document.createElement('div');
       card.className = 'msg msg-assistant';
       card.innerHTML = `
@@ -1120,6 +1282,7 @@
             ${sourcesHtml}
             ${reviewHtml}
             ${retrievalHtml}
+            ${feedbackHtml}
           </div>
         </div>`;
       messagesEl.appendChild(card);
@@ -1129,6 +1292,53 @@
         el.addEventListener('click', () => {
           input.value = el.dataset.prefill || "";
           input.focus();
+        });
+      });
+
+      // --- Listeners feedback
+      const fbBar = card.querySelector('.feedback-bar');
+      const fbUp   = fbBar.querySelector('.fb-btn.up');
+      const fbDown = fbBar.querySelector('.fb-btn.down');
+      const fbStatus = fbBar.querySelector('.fb-status');
+      const scenarioKey = scenario.key || scenario.scenario_key || null;
+      const sourceCount = sources.length;
+
+      fbUp.addEventListener('click', async () => {
+        fbUp.classList.add('active');
+        fbDown.disabled = true;
+        fbUp.disabled = true;
+        fbStatus.textContent = "Envoi…";
+        fbStatus.classList.remove('err');
+        const ok = await submitFeedback({
+          rating: 5,
+          category: 'other',
+          message: null,
+          requestId,
+          scenarioKey,
+          sourceCount,
+          needsHuman,
+        });
+        fbStatus.textContent = ok ? "Merci !" : "Échec envoi";
+        if (!ok) { fbStatus.classList.add('err'); fbUp.disabled = false; fbDown.disabled = false; fbUp.classList.remove('active'); }
+      });
+
+      fbDown.addEventListener('click', () => {
+        openFeedbackModal({
+          requestId,
+          scenarioKey,
+          sourceCount,
+          needsHuman,
+          onSubmitted: (ok) => {
+            if (ok) {
+              fbDown.classList.add('active');
+              fbUp.disabled = true;
+              fbDown.disabled = true;
+              fbStatus.textContent = "Merci pour votre retour";
+            } else {
+              fbStatus.textContent = "Échec envoi";
+              fbStatus.classList.add('err');
+            }
+          },
         });
       });
 
@@ -1187,6 +1397,92 @@
       } finally {
         sendBtn.disabled = false;
       }
+    }
+
+    // =================== FEEDBACK ===================
+    // POST direct dans rag_feedback (anon a le droit INSERT).
+    async function submitFeedback({ rating, category, message, requestId, scenarioKey, sourceCount, needsHuman }) {
+      try {
+        const res = await fetch(FEEDBACK_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify({
+            request_id: requestId || null,
+            session_id: SESSION_ID,
+            rating: rating,
+            category: category,
+            message: message || null,
+            metadata: {
+              scenario_key: scenarioKey || null,
+              source_count: sourceCount || 0,
+              needs_human_review: !!needsHuman,
+              user_agent: navigator.userAgent.slice(0, 200),
+            },
+          }),
+        });
+        return res.ok;
+      } catch (e) {
+        console.error("[feedback] failed", e);
+        return false;
+      }
+    }
+
+    // Modal pour le feedback négatif
+    function openFeedbackModal({ requestId, scenarioKey, sourceCount, needsHuman, onSubmitted }) {
+      const overlay = document.getElementById('fb-modal-overlay');
+      const categorySelect = document.getElementById('fb-category');
+      const messageTextarea = document.getElementById('fb-message');
+      const cancelBtn = document.getElementById('fb-cancel');
+      const submitBtn = document.getElementById('fb-submit');
+
+      categorySelect.value = 'wrong-answer';
+      messageTextarea.value = '';
+      overlay.classList.add('active');
+      setTimeout(() => messageTextarea.focus(), 100);
+
+      const closeModal = () => overlay.classList.remove('active');
+
+      const onCancel = () => {
+        closeModal();
+        cleanup();
+        onSubmitted(false);
+      };
+
+      const onSubmit = async () => {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Envoi…";
+        const ok = await submitFeedback({
+          rating: 1,
+          category: categorySelect.value,
+          message: messageTextarea.value.trim() || null,
+          requestId,
+          scenarioKey,
+          sourceCount,
+          needsHuman,
+        });
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Envoyer";
+        closeModal();
+        cleanup();
+        onSubmitted(ok);
+      };
+
+      const cleanup = () => {
+        cancelBtn.removeEventListener('click', onCancel);
+        submitBtn.removeEventListener('click', onSubmit);
+        overlay.removeEventListener('click', onOverlayClick);
+      };
+
+      const onOverlayClick = (e) => { if (e.target === overlay) onCancel(); };
+
+      cancelBtn.addEventListener('click', onCancel);
+      submitBtn.addEventListener('click', onSubmit);
+      overlay.addEventListener('click', onOverlayClick);
     }
 
     // =================== LISTENERS ===================
