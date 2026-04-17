@@ -232,10 +232,10 @@
     background:
       radial-gradient(800px 400px at 50% -20%, rgba(10,10,10,0.02), transparent 60%),
       var(--bg);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  .main::-webkit-scrollbar { width: 6px; }
-  .main::-webkit-scrollbar-thumb { background: var(--hairline-strong); border-radius: 6px; }
-  .main::-webkit-scrollbar-thumb:hover { background: var(--faint); }
+  .main::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
   .shell {
     width: 100%;
@@ -487,9 +487,10 @@
     gap: 22px;
     padding: 8px 4px 20px;
     scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
-  .messages::-webkit-scrollbar { width: 6px; }
-  .messages::-webkit-scrollbar-thumb { background: var(--hairline-strong); border-radius: 6px; }
+  .messages::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
   /* =========== MESSAGE BUBBLES =========== */
   .msg { display: flex; gap: 12px; animation: fadeIn .3s var(--ease) both; }
@@ -1035,15 +1036,7 @@
           <div class="composer">
             <input type="text" class="composer-input" placeholder="Posez votre question fiscale" aria-label="Votre question" />
             <div class="composer-bar">
-              <div class="composer-bar-left">
-                <button type="button" class="composer-tool" aria-label="Ajouter un fichier" tabindex="-1">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                </button>
-                <button type="button" class="composer-tool-label" aria-label="Sources" tabindex="-1">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="9" y1="9" x2="9" y2="20"/></svg>
-                  Sources
-                </button>
-              </div>
+              <div class="composer-bar-left"></div>
               <div class="composer-bar-right">
                 <button type="button" class="task-btn" aria-label="Envoyer">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
