@@ -645,6 +645,88 @@
     white-space: nowrap;
   }
 
+  /* ============== CHOICE CARDS (guided flow) ============== */
+  .choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 720px;
+  }
+  @media (max-width: 680px) {
+    .choice-grid { grid-template-columns: 1fr; }
+  }
+  .choice-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, transform .15s, box-shadow .15s;
+    text-align: left;
+    min-height: 90px;
+  }
+  .choice-card:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.12);
+  }
+  .choice-card:disabled, .choice-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none;
+    box-shadow: none;
+  }
+  .choice-card.selected {
+    border-color: #2563eb;
+    background: #dbeafe;
+    opacity: 0.85;
+  }
+  .choice-icon {
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .choice-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.3;
+  }
+  .choice-sub {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+  }
+
+  /* Breadcrumb du parcours */
+  .breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  /* Intro card style */
+  .intro-card {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+  }
+
   /* ============== FEEDBACK BAR ============== */
   .feedback-bar {
     display: flex;
@@ -916,33 +998,6 @@
         <div class="messages" id="messages"></div>
       </div>
 
-      <!-- Suggestions -->
-      <div class="suggestions">
-        <button type="button" class="suggestion">
-          <span class="suggestion-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M17 13l2 2-3 3"/></svg>
-          </span>
-          Où déclarer les frais de tutelle ?
-        </button>
-        <button type="button" class="suggestion">
-          <span class="suggestion-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="6"/><path d="M5 5l3 3M12 3l3 3"/></svg>
-          </span>
-          Rattacher mon enfant majeur handicapé
-        </button>
-        <button type="button" class="suggestion">
-          <span class="suggestion-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/><path d="M17 3l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>
-          </span>
-          L'AAH est-elle imposable ?
-        </button>
-        <button type="button" class="suggestion">
-          <span class="suggestion-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l1.5 3L10 7.5 6.5 9 5 12 3.5 9 0 7.5 3.5 6z" transform="translate(3 2)"/><path d="M19 14l.75 1.5L21 16l-1.25.5L19 18l-.75-1.5L17 16l1.25-.5z"/><path d="M13 9l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/></svg>
-          </span>
-          Quelle case pour les services à la personne ?
-        </button>
-      </div>
     </main>
   </div>
 
@@ -1359,11 +1414,15 @@
     // =================== SEND ===================
     // Toutes les réponses (y compris salutations) passent par l'agent pour qu'il adapte lui-même le ton.
     // L'historique est passé à l'Edge Function pour donner une vraie mémoire conversationnelle à Claude.
-    async function sendQuestion(question) {
+    // opts.guided=true + opts.path : la question vient d'un parcours guidé, Claude doit répondre court.
+    async function sendQuestion(question, opts = {}) {
       if (!question || !question.trim()) return;
       const q = question.trim();
+      const { guided = false, path = null } = opts;
       enterChatMode();
-      renderUserMessage(q);
+      // Si la question est pré-formulée (mode guidé), on affiche le libellé du bouton, pas la question technique complète.
+      // Ici on l'a déjà fait dans handleChoice, donc on évite le double affichage.
+      if (!guided) renderUserMessage(q);
       input.value = "";
       sendBtn.disabled = true;
       renderTyping();
@@ -1380,8 +1439,9 @@
             question: q,
             sessionId: SESSION_ID,
             profile: {},
-            // 10 derniers tours max, filtrés côté serveur aussi
             history: conversationHistory.slice(-10),
+            guided: guided,
+            guidedPath: path || null,
           }),
         });
 
@@ -1504,23 +1564,256 @@
       }
       sendBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log("[chatbot] Analyser clicked, value=", input.value);
         sendQuestion(input.value);
       });
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
-          console.log("[chatbot] Enter pressed, value=", input.value);
           sendQuestion(input.value);
         }
       });
-      document.querySelectorAll('.suggestion').forEach(s => {
-        s.addEventListener('click', (e) => {
-          e.preventDefault();
-          sendQuestion(s.innerText.trim());
+
+      // Démarrage : on entre immédiatement en chat mode et on rend le nœud d'accueil.
+      enterChatMode();
+      renderTreeNode('welcome');
+      console.log("[chatbot] Listeners initialisés, session=", SESSION_ID);
+    }
+
+    // =================== ARBRE DE DÉCISION GUIDÉE ===================
+    // Parcours conversationnel avec boutons cliquables.
+    // Chaque option peut : aller à un node suivant (next), envoyer une question au RAG (query), ou débloquer le chat libre (action:'freeChat').
+    const TREE = {
+      welcome: {
+        path: "",
+        intro: "Bonjour 👋 Je suis l'assistant fiscal de **Brice & Morgan**, spécialisé dans la déclaration **IR 2026** (revenus 2025) pour les situations de **handicap, invalidité, tutelle, curatelle et aidants**.\n\nPour vous accompagner simplement, dites-moi par où vous voulez commencer :",
+        options: [
+          { icon: "👤", label: "Je déclare pour moi",            sub: "Handicap, invalidité, CMI, AAH, pension…",    next: "self" },
+          { icon: "🤝", label: "Pour une personne que j'aide",    sub: "Enfant, parent, proche sous protection…",      next: "helping" },
+          { icon: "💬", label: "J'ai une question précise",       sub: "Je la tape directement.",                      action: "freeChat" },
+          { icon: "🤔", label: "Je ne sais pas par où commencer", sub: "Guidez-moi avec des questions simples.",       next: "lost" }
+        ]
+      },
+
+      // ============ BRANCHE : JE DÉCLARE POUR MOI ============
+      self: {
+        path: "Je déclare pour moi",
+        intro: "Parfait. Quelle est votre situation principale ?",
+        options: [
+          { icon: "🪪", label: "J'ai une CMI invalidité",              next: "self_cmi" },
+          { icon: "💰", label: "Je touche une pension d'invalidité",    next: "self_pension" },
+          { icon: "💵", label: "Je touche l'AAH",                       query: "Je touche l'AAH (allocation adulte handicapé), dois-je la déclarer sur ma déclaration IR 2026 ?" },
+          { icon: "🏭", label: "Je travaille en ESAT",                  query: "Je travaille en ESAT, comment déclarer mes revenus et y a-t-il un abattement spécifique ?" },
+          { icon: "🏠", label: "J'emploie une aide à domicile",          next: "self_services" },
+          { icon: "🔀", label: "Ma situation est différente",            action: "freeChat" }
+        ]
+      },
+
+      self_cmi: {
+        path: "Je déclare pour moi › CMI invalidité",
+        intro: "Votre **CMI mention invalidité** ouvre plusieurs avantages fiscaux. Quelle est votre question précise ?",
+        options: [
+          { icon: "📋", label: "Quelle case sur ma 2042 ?",             query: "Je suis titulaire d'une CMI mention invalidité, quelles cases dois-je cocher sur ma déclaration 2042 ?" },
+          { icon: "➕", label: "Demi-part supplémentaire",               query: "Ma CMI invalidité me donne-t-elle droit à une demi-part supplémentaire de quotient familial ?" },
+          { icon: "🏠", label: "Plafond majoré aide à domicile",        query: "Je suis titulaire CMI invalidité, quel est le plafond majoré pour le crédit d'impôt emploi à domicile ?" },
+          { icon: "🔀", label: "Autre question",                        action: "freeChat" }
+        ]
+      },
+
+      self_pension: {
+        path: "Je déclare pour moi › Pension d'invalidité",
+        intro: "D'accord. De quel régime vient votre pension ?",
+        options: [
+          { icon: "🏥", label: "Sécurité sociale (maladie, invalidité générale)", query: "Ma pension d'invalidité versée par la Sécurité sociale est-elle imposable et dans quelle case la déclarer ?" },
+          { icon: "⚠️", label: "Accident du travail / maladie pro",              query: "Ma pension d'invalidité suite à un accident du travail ou une maladie professionnelle est-elle imposable ?" },
+          { icon: "🎖️", label: "Militaire / victime de guerre",                  query: "Ma pension d'invalidité militaire ou de victime de guerre est-elle imposable ?" },
+          { icon: "❓", label: "Je ne sais pas de quel régime",                   query: "Je touche une pension d'invalidité mais je ne connais pas son régime. Comment le vérifier pour ma déclaration ?" },
+          { icon: "🔀", label: "Autre question",                                  action: "freeChat" }
+        ]
+      },
+
+      self_services: {
+        path: "Je déclare pour moi › Aide à domicile",
+        intro: "Comment employez-vous cette aide à domicile ?",
+        options: [
+          { icon: "💳", label: "En CESU (emploi direct)",                        query: "J'emploie une aide à domicile en CESU, quelle case et quel plafond pour le crédit d'impôt services à la personne ?" },
+          { icon: "🏢", label: "Via un organisme agréé",                          query: "Mon aide à domicile passe par un organisme agréé. Quelle case cocher sur la déclaration ?" },
+          { icon: "🪪", label: "Je suis CMI invalidité (plafond majoré)",         query: "Je suis titulaire d'une CMI invalidité et j'emploie une aide à domicile. Quel est le plafond majoré ?" },
+          { icon: "🔀", label: "Autre question",                                  action: "freeChat" }
+        ]
+      },
+
+      // ============ BRANCHE : POUR UNE PERSONNE AIDÉE ============
+      helping: {
+        path: "Pour une personne que j'aide",
+        intro: "Qui est cette personne ?",
+        options: [
+          { icon: "🧒", label: "Mon enfant (mineur ou majeur)",           next: "helping_child" },
+          { icon: "👵", label: "Un parent (père, mère…)",                  next: "helping_parent" },
+          { icon: "⚖️", label: "Un proche sous tutelle ou curatelle",      next: "helping_protection" },
+          { icon: "🏠", label: "Une personne qui vit chez moi",            next: "helping_roof" },
+          { icon: "🔀", label: "Autre relation",                           action: "freeChat" }
+        ]
+      },
+
+      helping_child: {
+        path: "Pour une personne aidée › Mon enfant",
+        intro: "Quel âge a votre enfant, et quelle est sa situation ?",
+        options: [
+          { icon: "🧸", label: "Mineur, avec CMI ou AEEH",                 query: "Mon enfant mineur handicapé est titulaire d'une CMI invalidité et je perçois l'AEEH. Quelle case cocher sur ma déclaration et quel avantage de quotient ?" },
+          { icon: "🎓", label: "Majeur rattaché à mon foyer",              query: "Mon enfant majeur handicapé est rattaché à mon foyer fiscal. Quelle case cocher et quelles sont les conditions ?" },
+          { icon: "🏡", label: "Majeur, son propre foyer fiscal",          next: "helping_adult_own" },
+          { icon: "🔀", label: "Autre cas",                                action: "freeChat" }
+        ]
+      },
+
+      helping_adult_own: {
+        path: "Pour une personne aidée › Enfant majeur, foyer distinct",
+        intro: "Quel type de soutien lui apportez-vous ?",
+        options: [
+          { icon: "💶", label: "Je lui verse une pension financière",       query: "Je verse une pension à mon enfant majeur handicapé qui a son propre foyer fiscal. Quelle case, quelles conditions, quel plafond ?" },
+          { icon: "🛏️", label: "Je l'héberge gratuitement",                query: "J'héberge gratuitement mon enfant majeur handicapé qui a son propre foyer fiscal. Puis-je déduire quelque chose ?" },
+          { icon: "💊", label: "Je prends en charge ses frais médicaux",   query: "Je paie les frais médicaux de mon enfant majeur handicapé qui a son propre foyer. Comment le déclarer ?" },
+          { icon: "🔀", label: "Autre cas",                                action: "freeChat" }
+        ]
+      },
+
+      helping_parent: {
+        path: "Pour une personne aidée › Un parent",
+        intro: "Quelle est la situation de votre parent ?",
+        options: [
+          { icon: "🏥", label: "En EHPAD / établissement",                  query: "Mon père ou ma mère est en EHPAD, je paie une partie des frais. Quelle case cocher et à quelles conditions ?" },
+          { icon: "🏠", label: "Vit chez moi avec CMI invalidité",          query: "Mon parent titulaire de la CMI invalidité vit chez moi. Quelle case cocher et quels avantages ?" },
+          { icon: "💰", label: "Je lui verse une pension alimentaire",      query: "Je verse une pension alimentaire à mon parent dans le besoin. Comment la déclarer et la justifier ?" },
+          { icon: "🔀", label: "Autre situation",                           action: "freeChat" }
+        ]
+      },
+
+      helping_protection: {
+        path: "Pour une personne aidée › Sous protection juridique",
+        intro: "Quel est votre rôle dans la mesure de protection ?",
+        options: [
+          { icon: "👨‍⚖️", label: "Tuteur professionnel (MJPM)",              query: "Je suis tuteur professionnel (mandataire judiciaire à la protection des majeurs). Où déclarer les frais de tutelle et comment les ventiler entre les revenus de la personne protégée ?" },
+          { icon: "👨‍👩‍👧", label: "Tuteur familial",                         query: "Je suis tuteur familial (non rémunéré). Quelles sont les règles fiscales pour la déclaration de la personne protégée et puis-je déduire mes frais ?" },
+          { icon: "👥", label: "Curateur (simple ou renforcé)",             query: "Je suis curateur. Quelles sont mes obligations fiscales pour la personne protégée et quelle différence entre curatelle simple et renforcée ?" },
+          { icon: "📜", label: "Habilitation familiale",                    query: "J'ai une habilitation familiale pour mon parent. Comment gérer sa déclaration fiscale ?" },
+          { icon: "❓", label: "Je ne connais pas le type de mesure",        query: "Je m'occupe d'un proche placé sous protection juridique mais je ne connais pas le type de mesure. Comment le vérifier et quel impact fiscal ?" },
+          { icon: "🔀", label: "Autre situation",                           action: "freeChat" }
+        ]
+      },
+
+      helping_roof: {
+        path: "Pour une personne aidée › Vit chez moi",
+        intro: "Quelle est la situation de cette personne ?",
+        options: [
+          { icon: "🪪", label: "Titulaire CMI invalidité",                  query: "Une personne titulaire de la CMI invalidité vit sous mon toit. Quels avantages fiscaux et quelle case cocher (case R) ?" },
+          { icon: "👵", label: "Âgée et dépendante (sans CMI)",             query: "Ma mère âgée dépendante vit chez moi sans CMI invalidité. Ai-je droit à des avantages fiscaux ?" },
+          { icon: "🔀", label: "Autre cas",                                 action: "freeChat" }
+        ]
+      },
+
+      // ============ BRANCHE : JE NE SAIS PAS PAR OÙ COMMENCER ============
+      lost: {
+        path: "Je ne sais pas par où commencer",
+        intro: "Pas de souci, on y va doucement. Qu'est-ce qui décrit le mieux votre situation actuelle ?",
+        options: [
+          { icon: "📮", label: "J'ai reçu un courrier de l'administration", query: "J'ai reçu un courrier de l'administration fiscale concernant le handicap ou une personne protégée. Que dois-je faire ?" },
+          { icon: "📋", label: "Première déclaration dans cette situation", query: "C'est la première fois que je fais ma déclaration IR 2026 dans le cadre d'un handicap ou d'une tutelle. Par quoi commencer ?" },
+          { icon: "🔍", label: "Comprendre les grandes règles",             query: "Quelles sont les grandes règles fiscales IR 2026 à connaître pour les situations de handicap et de tutelle ?" },
+          { icon: "❓", label: "J'ai un doute sur une case précise",         action: "freeChat" }
+        ]
+      }
+    };
+
+    let currentNodeId = null;
+
+    function renderTreeNode(nodeId) {
+      const node = TREE[nodeId];
+      if (!node) return;
+      currentNodeId = nodeId;
+
+      // Bulle d'accueil (assistant) avec le texte d'intro du node
+      const introEl = document.createElement('div');
+      introEl.className = 'msg msg-assistant';
+      const breadcrumbHtml = node.path
+        ? `<div class="breadcrumb">📍 ${escapeHtml(node.path)}</div>`
+        : '';
+      introEl.innerHTML = `
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <div class="msg-avatar"></div>
+          <div class="answer-card intro-card" style="flex:1;">
+            ${breadcrumbHtml}
+            <div class="answer-text">${formatAnswerText(node.intro)}</div>
+          </div>
+        </div>`;
+      messagesEl.appendChild(introEl);
+
+      // Cartes de choix (alignées avec l'avatar)
+      const choicesEl = document.createElement('div');
+      choicesEl.className = 'msg msg-assistant';
+      choicesEl.innerHTML = `
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <div style="width:32px; flex-shrink:0;"></div>
+          <div class="choice-grid" data-node="${nodeId}">
+            ${node.options.map((opt, idx) => `
+              <button type="button" class="choice-card" data-idx="${idx}">
+                <span class="choice-icon">${opt.icon}</span>
+                <span class="choice-label">${escapeHtml(opt.label)}</span>
+                ${opt.sub ? `<span class="choice-sub">${escapeHtml(opt.sub)}</span>` : ''}
+              </button>
+            `).join('')}
+          </div>
+        </div>`;
+      messagesEl.appendChild(choicesEl);
+
+      // Click handlers
+      choicesEl.querySelectorAll('.choice-card').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.idx, 10);
+          const opt = node.options[idx];
+          handleChoice(opt, node, choicesEl);
         });
       });
-      console.log("[chatbot] Listeners initialisés, session=", SESSION_ID);
+
+      scrollToBottom();
+    }
+
+    function handleChoice(opt, fromNode, choicesEl) {
+      // Désactive les cartes et marque la selection visuellement
+      choicesEl.querySelectorAll('.choice-card').forEach(b => {
+        b.disabled = true;
+        b.classList.add('disabled');
+      });
+      const btns = choicesEl.querySelectorAll('.choice-card');
+      const selectedIdx = fromNode.options.indexOf(opt);
+      if (selectedIdx >= 0 && btns[selectedIdx]) {
+        btns[selectedIdx].classList.add('selected');
+        btns[selectedIdx].classList.remove('disabled');
+      }
+
+      // Affiche la "réponse" de l'utilisateur (la phrase du bouton)
+      renderUserMessage(opt.label);
+
+      if (opt.next) {
+        // Navigue vers le node suivant avec un petit délai pour la fluidité
+        setTimeout(() => renderTreeNode(opt.next), 250);
+      } else if (opt.query) {
+        // Envoie la question pré-formulée au RAG
+        sendQuestion(opt.query, { guided: true, path: fromNode.path || '' });
+      } else if (opt.action === 'freeChat') {
+        // Débloque la saisie libre avec un prompt de l'assistant
+        const hintEl = document.createElement('div');
+        hintEl.className = 'msg msg-assistant';
+        hintEl.innerHTML = `
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div class="msg-avatar"></div>
+            <div class="answer-card intro-card" style="flex:1;">
+              <div class="answer-text"><p>D'accord. Décrivez votre situation ou votre question dans le champ de saisie en bas. Je vous répondrai de manière précise et sourcée.</p></div>
+            </div>
+          </div>`;
+        messagesEl.appendChild(hintEl);
+        input.focus();
+        scrollToBottom();
+      }
     }
 
     if (document.readyState === 'loading') {
