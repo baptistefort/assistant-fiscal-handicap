@@ -1104,6 +1104,9 @@
       let t = String(text)
         .replace(/\r\n/g, "\n")
         .replace(/\s*\[S\d+\](?:\s*\[S\d+\])*/g, "")   // citations [S1][S2]
+        // Nettoyage des tirets utilisés comme connecteurs : " — " et " – " → ", "
+        // Les tirets dans les mots composés (ex. "non-résident") sont préservés.
+        .replace(/\s+[—–]\s+/g, ", ")
         .trim();
 
       // --- Phase 1 : découpage des sous-titres inline ---
