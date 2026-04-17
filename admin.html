@@ -3,464 +3,776 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin · Feedback RAG — Brice &amp; Morgan</title>
+<title>Pôle Handicap · Admin</title>
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 <style>
+  :root {
+    --bg: #fafaf9;
+    --bg-soft: #f5f5f4;
+    --bg-card: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #27272a;
+    --muted: #71717a;
+    --faint: #a1a1aa;
+    --hairline: #e7e5e4;
+    --hairline-strong: #d6d3d1;
+    --success: #15803d;
+    --success-soft: #f0fdf4;
+    --warn: #b45309;
+    --warn-soft: #fffbeb;
+    --danger: #b91c1c;
+    --danger-soft: #fef2f2;
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    font-family: "Google Sans", Helvetica, Arial, sans-serif;
-    background: #f6f7f9;
-    color: #0f172a;
+    font-family: 'Inter var', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.008em;
+    color: var(--ink);
+    background: var(--bg);
+    overflow: hidden;
   }
 
-  /* ====== LAYOUT ====== */
-  .page { min-height: 100vh; display: flex; flex-direction: column; }
-  .header {
-    background: #fff;
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  .header .brand {
-    font-size: 18px;
-    font-weight: 600;
-  }
-  .header .brand small {
-    color: #6b7280;
-    font-weight: 400;
-    margin-left: 12px;
-    font-size: 13px;
-  }
-  .header-right { display: flex; align-items: center; gap: 12px; }
-  .logout-btn {
-    padding: 8px 14px;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    color: #6b7280;
-    font-size: 13px;
-    font-family: inherit;
-    cursor: pointer;
-  }
-  .logout-btn:hover { background: #f9fafb; }
-
-  .main { flex: 1; padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
-
-  /* ====== LOGIN SCREEN ====== */
-  .login-overlay {
-    position: fixed;
-    inset: 0;
-    background: #f6f7f9;
+  /* ========== LOGIN OVERLAY ========== */
+  #login-overlay {
+    position: fixed; inset: 0;
     display: grid;
     place-items: center;
+    background: var(--bg);
     z-index: 100;
   }
   .login-card {
-    background: #fff;
-    padding: 40px 44px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    border: 1px solid #e5e7eb;
-    max-width: 440px;
-    width: calc(100% - 40px);
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    padding: 36px 40px;
+    width: 380px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 8px 28px rgba(10,10,10,0.05);
   }
+  .login-crown {
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    border-radius: 12px;
+    background: var(--ink);
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .login-crown svg { width: 22px; height: 22px; stroke-width: 1.8; }
   .login-card h1 {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
-    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
   }
   .login-card p {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--muted);
     line-height: 1.5;
+    margin-bottom: 22px;
   }
   .login-card label {
     display: block;
     font-size: 12px;
-    font-weight: 600;
-    color: #374151;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
   }
   .login-card input {
     width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid #e5e7eb;
+    padding: 11px 14px;
+    border: 1px solid var(--hairline);
     border-radius: 10px;
-    font-family: inherit;
     font-size: 14px;
-    margin-bottom: 18px;
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--bg-card);
+    transition: border-color .15s;
   }
-  .login-card input:focus { outline: none; border-color: #2563eb; }
+  .login-card input:focus { outline: none; border-color: var(--ink); }
   .login-card button {
     width: 100%;
-    padding: 12px;
-    background: #2563eb;
+    margin-top: 14px;
+    padding: 11px 14px;
+    background: var(--ink);
     color: #fff;
     border: none;
     border-radius: 10px;
-    font-family: inherit;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 500;
+    font-family: inherit;
     cursor: pointer;
+    transition: background .15s;
   }
-  .login-card button:hover { background: #1d4ed8; }
+  .login-card button:hover { background: var(--ink-soft); }
   .login-error {
-    padding: 10px 12px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
-    color: #991b1b;
-    font-size: 13px;
-    margin-bottom: 14px;
     display: none;
+    color: var(--danger);
+    font-size: 12.5px;
+    margin-top: 10px;
   }
   .login-error.show { display: block; }
 
-  /* ====== STATS ROW ====== */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: #fff;
-    padding: 18px 20px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-  }
-  .stat-card .n {
-    font-size: 28px;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1;
-  }
-  .stat-card .lbl {
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-  }
-  .stat-card.good .n { color: #059669; }
-  .stat-card.bad .n { color: #dc2626; }
-  .stat-card.blue .n { color: #2563eb; }
-  .stat-card.violet .n { color: #7c3aed; }
+  /* ========== APP SHELL ========== */
+  .app { display: none; grid-template-columns: 220px 1fr; height: 100vh; }
+  .app.ready { display: grid; }
 
-  /* ====== FILTERS ====== */
-  .filters {
-    background: #fff;
-    padding: 14px 18px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+  /* Sidebar */
+  .admin-sidebar {
+    border-right: 1px solid var(--hairline);
+    background: var(--bg);
     display: flex;
-    gap: 12px;
+    flex-direction: column;
+    padding: 18px 14px;
+    gap: 2px;
+  }
+  .brand-row {
+    display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
+    gap: 10px;
+    padding: 6px 10px 22px;
   }
-  .filters label { font-size: 13px; color: #374151; font-weight: 500; }
-  .filters select, .filters input {
-    padding: 8px 12px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: 13px;
-    font-family: inherit;
-  }
-  .filters .spacer { flex: 1; }
-  .filters .refresh {
-    padding: 8px 14px;
-    background: #0f172a;
+  .brand-mark {
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    background: var(--ink);
     color: #fff;
+  }
+  .brand-mark svg { width: 16px; height: 16px; stroke-width: 1.8; }
+  .brand-label { font-size: 13.5px; font-weight: 600; letter-spacing: -0.012em; }
+  .brand-sub { font-size: 11px; color: var(--faint); }
+  .brand-col { display: flex; flex-direction: column; line-height: 1.15; }
+
+  .nav-section-title {
+    font-size: 10.5px;
+    color: var(--faint);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 12px 10px 6px;
+  }
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 11px;
     border: none;
-    border-radius: 8px;
-    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 500;
-  }
-  .filters .refresh:hover { background: #1e293b; }
-
-  /* ====== TABLE ====== */
-  .table-wrap {
-    background: #fff;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  thead th {
-    background: #f9fafb;
-    padding: 12px 14px;
+    color: var(--ink-soft);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
     text-align: left;
+    width: 100%;
+    letter-spacing: -0.003em;
+  }
+  .nav-btn:hover { background: var(--bg-soft); }
+  .nav-btn.active { background: var(--ink); color: #fff; }
+  .nav-btn svg { width: 16px; height: 16px; stroke-width: 1.6; flex-shrink: 0; }
+  .nav-btn-count {
+    margin-left: auto;
     font-size: 11px;
-    font-weight: 700;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    border-bottom: 1px solid #e5e7eb;
+    color: var(--faint);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
-  tbody td {
-    padding: 14px;
-    border-bottom: 1px solid #f3f4f6;
-    font-size: 13px;
-    color: #1f2937;
-    vertical-align: top;
-  }
-  tbody tr:hover { background: #fafbfc; }
-  tbody tr:last-child td { border-bottom: none; }
+  .nav-btn.active .nav-btn-count { color: var(--faint); }
 
-  .rating-chip {
-    display: inline-flex;
+  .nav-spacer { flex: 1; }
+  .logout-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 11px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+  .logout-btn:hover { background: var(--bg-soft); color: var(--ink); }
+  .logout-btn svg { width: 15px; height: 15px; stroke-width: 1.6; }
+
+  /* Main content */
+  .admin-main {
+    overflow-y: auto;
+    padding: 36px 44px;
+    scrollbar-width: none;
+  }
+  .admin-main::-webkit-scrollbar { display: none; }
+
+  .page-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .page-title {
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+  }
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .head-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .search-box {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    font-size: 18px;
-    border: 2px solid;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    min-width: 280px;
+    transition: border-color .15s;
   }
-  .rating-chip.up   { background: #ecfdf5; border-color: #10b981; }
-  .rating-chip.down { background: #fef2f2; border-color: #ef4444; }
-  .rating-chip.mid  { background: #fffbeb; border-color: #f59e0b; }
-
-  .cat-chip {
-    display: inline-block;
-    padding: 3px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    border-radius: 5px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-  .cat-wrong-answer   { background: #fef2f2; color: #991b1b; }
-  .cat-missing-source { background: #fff7ed; color: #9a3412; }
-  .cat-unclear        { background: #fef9c3; color: #854d0e; }
-  .cat-needs-cgp-review { background: #ede9fe; color: #5b21b6; }
-  .cat-bug            { background: #e0f2fe; color: #075985; }
-  .cat-other          { background: #f3f4f6; color: #4b5563; }
-
-  .msg-cell {
-    max-width: 400px;
+  .search-box:focus-within { border-color: var(--ink); }
+  .search-box svg { width: 14px; height: 14px; color: var(--faint); stroke-width: 1.8; }
+  .search-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
     font-size: 13px;
-    color: #374151;
-    line-height: 1.5;
+    color: var(--ink);
+    font-family: inherit;
   }
-  .msg-cell .question {
-    font-size: 12px;
-    color: #6b7280;
+  .search-box input::placeholder { color: var(--faint); }
+
+  .btn {
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { border-color: var(--hairline-strong); }
+  .btn svg { width: 14px; height: 14px; stroke-width: 1.6; }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .stat-card .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
     margin-bottom: 6px;
-    padding: 6px 10px;
-    background: #f9fafb;
-    border-left: 3px solid #e5e7eb;
-    border-radius: 0 6px 6px 0;
-    font-style: italic;
+  }
+  .stat-card .n {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.025em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat-card .delta {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 4px;
   }
 
-  .meta-cell {
-    font-size: 11px;
-    color: #6b7280;
+  /* Conversations list */
+  .conv-list { display: flex; flex-direction: column; gap: 0; }
+  .conv-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 120px 110px;
+    gap: 16px;
+    align-items: center;
+    padding: 16px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-bottom: none;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
   }
-  .meta-cell .id {
-    font-family: "SFMono-Regular", ui-monospace, Menlo, monospace;
-    font-size: 11px;
-    background: #f3f4f6;
-    padding: 1px 5px;
-    border-radius: 3px;
-    margin-right: 6px;
+  .conv-row:first-child { border-top-left-radius: 12px; border-top-right-radius: 12px; }
+  .conv-row:last-child {
+    border-bottom: 1px solid var(--hairline);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
   }
+  .conv-row:hover { background: var(--bg-soft); }
+  .conv-row.active { background: var(--bg-soft); border-color: var(--ink); position: relative; z-index: 2; }
 
-  .date-cell {
+  .conv-date {
     font-size: 12px;
-    color: #6b7280;
-    white-space: nowrap;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
   }
-  .date-cell .t { font-size: 11px; opacity: 0.7; }
+  .conv-date strong { color: var(--ink); font-weight: 500; display: block; }
+  .conv-topic {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .conv-question {
+    font-size: 13.5px;
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .conv-scenarios { display: flex; gap: 4px; flex-wrap: wrap; }
+  .conv-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .conv-tag.scenario-unknown { color: var(--faint); }
+  .conv-tag.review { color: var(--warn); background: var(--warn-soft); border-color: #fcd34d; }
+  .conv-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .conv-metrics strong { color: var(--ink); font-weight: 500; }
+  .conv-fb { display: flex; gap: 4px; align-items: center; justify-content: flex-end; font-size: 12px; }
+  .fb-chip {
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .fb-chip.up { background: var(--success-soft); color: var(--success); }
+  .fb-chip.down { background: var(--danger-soft); color: var(--danger); }
+
+  /* Session detail panel (slide-in on right) */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,10,0.3);
+    backdrop-filter: blur(4px);
+    display: none;
+    z-index: 50;
+    animation: fadeIn .2s var(--ease);
+  }
+  .detail-overlay.active { display: block; }
+  .detail-panel {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(720px, 95vw);
+    background: var(--bg-card);
+    border-left: 1px solid var(--hairline);
+    z-index: 51;
+    transform: translateX(100%);
+    transition: transform .3s var(--ease);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -20px 0 40px rgba(0,0,0,0.06);
+  }
+  .detail-overlay.active .detail-panel { transform: translateX(0); }
+  .detail-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--hairline);
+    flex-shrink: 0;
+  }
+  .detail-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .detail-title h2 { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; }
+  .detail-title .sub { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .detail-close {
+    width: 32px; height: 32px;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    display: grid; place-items: center;
+    transition: all .15s;
+  }
+  .detail-close:hover { border-color: var(--ink); color: var(--ink); }
+  .detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 28px;
+    scrollbar-width: none;
+  }
+  .detail-body::-webkit-scrollbar { display: none; }
+
+  .turn {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    background: var(--bg-soft);
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+  }
+  .turn-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .turn-head strong { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .turn-head .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--faint); }
+  .turn-q {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
+  .turn-meta {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .turn-meta span {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg-card);
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .turn-fb {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    border-left: 3px solid var(--ink);
+    font-size: 12.5px;
+  }
+  .turn-fb strong { font-weight: 600; }
 
   .empty-state {
     padding: 60px 20px;
     text-align: center;
-    color: #6b7280;
+    color: var(--muted);
   }
-  .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: #374151; }
+  .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+  .empty-state p { font-size: 13.5px; }
 
   .loading {
-    padding: 40px;
+    padding: 40px 20px;
     text-align: center;
-    color: #6b7280;
+    color: var(--muted);
+    font-size: 13px;
   }
 
-  /* ====== CHART ====== */
-  .chart-wrap {
-    background: #fff;
-    padding: 22px 24px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    margin-bottom: 20px;
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Feedback table (simplified) */
+  .fb-table {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
   }
-  .chart-wrap h3 {
-    font-size: 14px;
+  .fb-table thead th {
+    text-align: left;
+    padding: 11px 16px;
+    font-size: 11px;
     font-weight: 600;
-    color: #111827;
-    margin-bottom: 16px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--bg-soft);
   }
+  .fb-table tbody td {
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: top;
+  }
+  .fb-table tbody tr:last-child td { border-bottom: none; }
+  .rating-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+  .rating-chip.up { background: var(--success-soft); }
+  .rating-chip.down { background: var(--danger-soft); }
+  .rating-chip.mid { background: var(--bg-soft); }
+
+  .cat-chip {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    border: 1px solid var(--hairline);
+  }
+  .fb-cell-question {
+    max-width: 360px;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Stats chart */
   .chart {
     display: flex;
-    gap: 4px;
     align-items: flex-end;
+    gap: 3px;
     height: 140px;
-    padding: 10px 0;
+    padding: 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    overflow-x: auto;
   }
-  .chart-bar {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    min-width: 0;
-  }
-  .chart-bar .stack {
-    display: flex;
-    flex-direction: column-reverse;
-    width: 100%;
-    height: 100%;
-    justify-content: flex-end;
-    gap: 1px;
-  }
-  .chart-bar .up-bar   { background: #10b981; border-radius: 3px 3px 0 0; min-height: 0; }
-  .chart-bar .down-bar { background: #ef4444; border-radius: 0; min-height: 0; }
-  .chart-bar .down-bar.has-up { border-radius: 0; }
-  .chart-bar .lbl {
-    font-size: 9px;
-    color: #9ca3af;
-    margin-top: 4px;
-    transform: rotate(-45deg);
-    white-space: nowrap;
-    transform-origin: center;
-  }
-  .chart-legend {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 16px;
-  }
-  .chart-legend .dot {
-    display: inline-block;
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    margin-right: 6px;
-    vertical-align: middle;
-  }
+  .chart-bar { display: flex; flex-direction: column; align-items: center; min-width: 24px; gap: 6px; }
+  .chart-bar .stack { height: 100px; width: 20px; display: flex; flex-direction: column-reverse; justify-content: flex-start; }
+  .chart-bar .up-bar { background: var(--ink); border-radius: 3px 3px 0 0; }
+  .chart-bar .down-bar { background: var(--danger); border-radius: 3px 3px 0 0; margin-top: 1px; }
+  .chart-bar .lbl { font-size: 9px; color: var(--faint); font-variant-numeric: tabular-nums; }
 
+  @media (max-width: 900px) {
+    .app.ready { grid-template-columns: 1fr; }
+    .admin-sidebar { display: none; }
+    .admin-main { padding: 20px 16px; }
+    .conv-row { grid-template-columns: 1fr; gap: 6px; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
-<div class="page">
 
-  <!-- ======= LOGIN ======= -->
-  <div class="login-overlay" id="login-overlay">
-    <div class="login-card">
-      <h1>Accès admin · Feedback RAG</h1>
-      <p>Entrez le token d'administration. Il est stocké uniquement dans votre navigateur (localStorage) et envoyé via HTTPS à l'Edge Function.</p>
-      <div class="login-error" id="login-error">Token invalide ou erreur réseau.</div>
-      <form id="login-form">
-        <label for="admin-token">Token administrateur</label>
-        <input id="admin-token" type="password" autocomplete="current-password" placeholder="Entrez votre token…" required />
-        <button type="submit">Se connecter</button>
-      </form>
+<!-- ========== LOGIN GATE ========== -->
+<div id="login-overlay">
+  <form class="login-card" id="login-form">
+    <div class="login-crown">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 9l3 7h10l3-7-4.5 3.5L12 6l-3.5 6.5L4 9z"/>
+        <path d="M7 19h10"/>
+      </svg>
     </div>
-  </div>
+    <h1>Console admin</h1>
+    <p>Entrez votre token d'administration pour accéder aux conversations et aux feedbacks. Token stocké dans localStorage uniquement.</p>
+    <label for="admin-token">Token</label>
+    <input id="admin-token" type="password" autocomplete="current-password" placeholder="Entrez votre token…" required />
+    <button type="submit">Se connecter</button>
+    <div class="login-error" id="login-error"></div>
+  </form>
+</div>
 
-  <!-- ======= HEADER ======= -->
-  <header class="header" style="display:none;" id="app-header">
-    <div class="brand">
-      Admin · Feedback RAG <small>Brice &amp; Morgan · Pôle Handicap</small>
-    </div>
-    <div class="header-right">
-      <span id="last-refresh" style="font-size:12px; color:#9ca3af;"></span>
-      <button class="logout-btn" id="logout-btn">Se déconnecter</button>
-    </div>
-  </header>
-
-  <!-- ======= MAIN ======= -->
-  <main class="main" style="display:none;" id="app-main">
-
-    <!-- Stats -->
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card blue"><div class="n" id="s-total">—</div><div class="lbl">Feedbacks reçus</div></div>
-      <div class="stat-card good"><div class="n" id="s-positive">—</div><div class="lbl">👍 Utile</div></div>
-      <div class="stat-card bad"><div class="n" id="s-negative">—</div><div class="lbl">👎 À améliorer</div></div>
-      <div class="stat-card"><div class="n" id="s-rate">—</div><div class="lbl">Taux de feedback</div></div>
-      <div class="stat-card"><div class="n" id="s-avg">—</div><div class="lbl">Note moyenne</div></div>
-      <div class="stat-card violet"><div class="n" id="s-queries">—</div><div class="lbl">Requêtes totales</div></div>
-    </div>
-
-    <!-- Chart -->
-    <div class="chart-wrap">
-      <h3>Feedback sur les 30 derniers jours</h3>
-      <div class="chart" id="chart"></div>
-      <div class="chart-legend">
-        <span><span class="dot" style="background:#10b981;"></span>Utiles</span>
-        <span><span class="dot" style="background:#ef4444;"></span>À améliorer</span>
+<!-- ========== APP ========== -->
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="brand-row">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 9l3 7h10l3-7-4.5 3.5L12 6l-3.5 6.5L4 9z"/>
+          <path d="M7 19h10"/>
+        </svg>
+      </div>
+      <div class="brand-col">
+        <div class="brand-label">Pôle Handicap</div>
+        <div class="brand-sub">Admin console</div>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <label>Rating :</label>
-      <select id="f-rating">
-        <option value="">Tous</option>
-        <option value="5">Positif (5)</option>
-        <option value="1">Négatif (1)</option>
-      </select>
+    <div class="nav-section-title">Observabilité</div>
+    <button class="nav-btn active" data-section="conversations">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Conversations
+      <span class="nav-btn-count" id="count-conversations">—</span>
+    </button>
+    <button class="nav-btn" data-section="feedbacks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-6 0v4H5a2 2 0 0 0-2 2v10h18V11a2 2 0 0 0-2-2h-2z"/></svg>
+      Feedbacks
+      <span class="nav-btn-count" id="count-feedbacks">—</span>
+    </button>
+    <button class="nav-btn" data-section="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Statistiques
+    </button>
 
-      <label>Catégorie :</label>
-      <select id="f-category">
-        <option value="">Toutes</option>
-        <option value="wrong-answer">Réponse incorrecte</option>
-        <option value="missing-source">Source manquante</option>
-        <option value="unclear">Peu clair</option>
-        <option value="needs-cgp-review">Revue CGP</option>
-        <option value="bug">Bug</option>
-        <option value="other">Autre</option>
-      </select>
+    <div class="nav-spacer"></div>
 
-      <div class="spacer"></div>
-      <button class="refresh" id="refresh-btn">Actualiser</button>
-    </div>
+    <button class="logout-btn" id="logout-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Déconnexion
+    </button>
+  </aside>
 
-    <!-- Table -->
-    <div class="table-wrap">
-      <div class="loading" id="loading">Chargement…</div>
-      <table id="table" style="display:none;">
+  <!-- Main content -->
+  <main class="admin-main">
+
+    <!-- CONVERSATIONS section -->
+    <section class="section active" id="section-conversations">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Conversations</h1>
+          <div class="page-subtitle">Toutes les sessions utilisateurs des 30 derniers jours, groupées par session.</div>
+        </div>
+        <div class="head-actions">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="search-convs" placeholder="Rechercher dans les questions…" />
+          </div>
+          <button class="btn" id="refresh-convs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 19 5.4L23 9"/></svg>
+            Actualiser
+          </button>
+        </div>
+      </div>
+
+      <div class="stats-row" id="conv-stats-row">
+        <div class="stat-card"><div class="lbl">Sessions (30j)</div><div class="n" id="c-total">—</div></div>
+        <div class="stat-card"><div class="lbl">Requêtes totales</div><div class="n" id="c-queries">—</div></div>
+        <div class="stat-card"><div class="lbl">Tours moy. / session</div><div class="n" id="c-avg-turns">—</div></div>
+        <div class="stat-card"><div class="lbl">À revoir par CGP</div><div class="n" id="c-review">—</div></div>
+      </div>
+
+      <div id="convs-loading" class="loading">Chargement des conversations…</div>
+      <div class="conv-list" id="conv-list" style="display: none;"></div>
+      <div class="empty-state" id="convs-empty" style="display: none;">
+        <h3>Aucune conversation</h3>
+        <p>Aucune session ne correspond pour l'instant.</p>
+      </div>
+    </section>
+
+    <!-- FEEDBACKS section -->
+    <section class="section" id="section-feedbacks">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Feedbacks</h1>
+          <div class="page-subtitle">Retours utilisateurs (pouces vert / rouge) par réponse.</div>
+        </div>
+        <div class="head-actions">
+          <button class="btn" id="refresh-fb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 19 5.4L23 9"/></svg>
+            Actualiser
+          </button>
+        </div>
+      </div>
+
+      <div id="fb-loading" class="loading">Chargement…</div>
+      <table class="fb-table" id="fb-table" style="display: none;">
         <thead>
           <tr>
-            <th style="width:70px;">Note</th>
-            <th style="width:130px;">Catégorie</th>
-            <th>Question &amp; commentaire</th>
-            <th style="width:180px;">Contexte</th>
-            <th style="width:140px;">Date</th>
+            <th>Note</th>
+            <th>Catégorie</th>
+            <th>Question / Commentaire</th>
+            <th>Scenario</th>
+            <th>Date</th>
           </tr>
         </thead>
-        <tbody id="table-body"></tbody>
+        <tbody id="fb-body"></tbody>
       </table>
-      <div class="empty-state" id="empty-state" style="display:none;">
+      <div class="empty-state" id="fb-empty" style="display: none;">
         <h3>Aucun feedback</h3>
-        <p>Pas de feedback correspondant aux filtres actuels.</p>
+        <p>Aucun retour utilisateur pour l'instant.</p>
       </div>
-    </div>
+    </section>
+
+    <!-- STATS section -->
+    <section class="section" id="section-stats">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Statistiques</h1>
+          <div class="page-subtitle">Agrégats globaux et répartition journalière sur 30 jours.</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="lbl">Feedbacks total</div><div class="n" id="s-total">—</div></div>
+        <div class="stat-card"><div class="lbl">Pouces verts</div><div class="n" id="s-positive">—</div></div>
+        <div class="stat-card"><div class="lbl">Pouces rouges</div><div class="n" id="s-negative">—</div></div>
+        <div class="stat-card"><div class="lbl">Note moyenne</div><div class="n" id="s-avg">—</div></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="lbl">Requêtes totales</div><div class="n" id="s-queries">—</div></div>
+        <div class="stat-card"><div class="lbl">Taux de feedback</div><div class="n" id="s-rate">—</div></div>
+        <div class="stat-card"><div class="lbl">CGP review</div><div class="n" id="s-review">—</div></div>
+        <div class="stat-card"><div class="lbl">Dernière maj</div><div class="n" style="font-size:13px;color:var(--muted);" id="s-last">—</div></div>
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:10px;">👍 / 👎 · 30 derniers jours</div>
+      <div class="chart" id="chart"></div>
+    </section>
 
   </main>
+</div>
 
+<!-- ========== SESSION DETAIL PANEL ========== -->
+<div class="detail-overlay" id="detail-overlay">
+  <aside class="detail-panel">
+    <div class="detail-head">
+      <div class="detail-title">
+        <h2 id="detail-title">Session</h2>
+        <div class="sub" id="detail-sub">—</div>
+      </div>
+      <button class="detail-close" id="detail-close" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </aside>
 </div>
 
 <script>
@@ -474,29 +786,16 @@
   const loginForm    = document.getElementById('login-form');
   const loginError   = document.getElementById('login-error');
   const tokenInput   = document.getElementById('admin-token');
-  const appHeader    = document.getElementById('app-header');
-  const appMain      = document.getElementById('app-main');
+  const app          = document.getElementById('app');
   const logoutBtn    = document.getElementById('logout-btn');
-  const refreshBtn   = document.getElementById('refresh-btn');
-  const tableBody    = document.getElementById('table-body');
-  const tableEl      = document.getElementById('table');
-  const loadingEl    = document.getElementById('loading');
-  const emptyEl      = document.getElementById('empty-state');
-  const lastRefreshEl = document.getElementById('last-refresh');
 
-  function getToken() {
-    try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
-  }
-  function setToken(t) {
-    try { localStorage.setItem(TOKEN_KEY, t); } catch {}
-  }
-  function clearToken() {
-    try { localStorage.removeItem(TOKEN_KEY); } catch {}
-  }
+  function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch { return null; } }
+  function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch {} }
+  function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch {} }
 
-  async function callAdmin(qs) {
+  async function call(qs) {
     const token = getToken();
-    if (!token) return null;
+    if (!token) throw new Error("unauthorized");
     const res = await fetch(`${ADMIN_ENDPOINT}${qs}`, {
       method: "GET",
       headers: {
@@ -505,67 +804,251 @@
         "x-admin-token": token,
       },
     });
-    if (res.status === 401) {
-      throw new Error("unauthorized");
-    }
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
+    if (res.status === 401) throw new Error("unauthorized");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   }
 
   function escapeHtml(s) {
     return String(s ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
-
-  function formatDate(iso) {
+  function fmtDate(iso) {
+    if (!iso) return "—";
     const d = new Date(iso);
-    const date = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    const date = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
     const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    return { date, time };
+    return { date, time, full: date + " · " + time };
+  }
+  function fmtDuration(ms) {
+    if (!ms || ms < 1000) return "<1s";
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return s + "s";
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + "min " + (s % 60) + "s";
+    const h = Math.floor(m / 60);
+    return h + "h " + (m % 60) + "min";
   }
 
-  function renderRow(fb) {
-    const rating = fb.rating || 0;
-    const chipClass = rating >= 4 ? 'up' : (rating <= 2 ? 'down' : 'mid');
-    const chipIcon  = rating >= 4 ? '👍' : (rating <= 2 ? '👎' : '·');
+  // ========== NAV ==========
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const sec = btn.dataset.section;
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + sec).classList.add('active');
+    });
+  });
 
-    const catClass = 'cat-' + (fb.category || 'other');
-    const { date, time } = formatDate(fb.created_at);
+  // ========== CONVERSATIONS ==========
+  let allSessions = [];
+  async function loadConversations(searchTerm = "") {
+    const loading = document.getElementById('convs-loading');
+    const list = document.getElementById('conv-list');
+    const empty = document.getElementById('convs-empty');
+    loading.style.display = 'block';
+    list.style.display = 'none';
+    empty.style.display = 'none';
 
-    const event = fb.event || {};
-    const questionText = event.question_text
-      ? `<div class="question">« ${escapeHtml(event.question_text).slice(0, 260)}${event.question_text.length > 260 ? '…' : ''} »</div>`
-      : '';
+    try {
+      const qs = "?action=conversations&limit=200" + (searchTerm ? "&search=" + encodeURIComponent(searchTerm) : "");
+      const data = await call(qs);
+      allSessions = data.sessions || [];
 
-    const message = fb.message
-      ? `<div>${escapeHtml(fb.message)}</div>`
-      : (rating >= 4 ? '<div style="color:#9ca3af; font-style:italic;">Pas de commentaire</div>' : '');
+      // Stats rows
+      let totalTurns = 0;
+      let review = 0;
+      for (const s of allSessions) { totalTurns += s.turns; if (s.needs_human_review) review += 1; }
+      document.getElementById('c-total').textContent = allSessions.length;
+      document.getElementById('c-queries').textContent = totalTurns;
+      document.getElementById('c-avg-turns').textContent = allSessions.length > 0 ? (totalTurns / allSessions.length).toFixed(1) : "—";
+      document.getElementById('c-review').textContent = review;
+      document.getElementById('count-conversations').textContent = allSessions.length;
+
+      loading.style.display = 'none';
+      if (allSessions.length === 0) {
+        empty.style.display = 'block';
+        return;
+      }
+      list.style.display = 'flex';
+      list.innerHTML = allSessions.map(renderConvRow).join('');
+
+      // bind click
+      list.querySelectorAll('.conv-row').forEach(row => {
+        row.addEventListener('click', () => openSession(row.dataset.sid));
+      });
+    } catch (e) {
+      loading.style.display = 'none';
+      if (e.message === "unauthorized") { showLogin("Session expirée, reconnectez-vous."); }
+      else { empty.innerHTML = '<h3>Erreur</h3><p>' + escapeHtml(e.message) + '</p>'; empty.style.display = 'block'; }
+    }
+  }
+  function renderConvRow(s) {
+    const started = fmtDate(s.started_at);
+    const duration = fmtDuration(s.duration_ms);
+    const scenarios = (s.scenarios || []).slice(0, 3);
+    const question = s.topic_snippet || "(sans texte)";
+    const fbUp = s.feedback?.up || 0;
+    const fbDown = s.feedback?.down || 0;
+    const scenarioChips = scenarios.length > 0
+      ? scenarios.map(sc => `<span class="conv-tag ${sc === 'unknown' ? 'scenario-unknown' : ''}">${escapeHtml(sc || 'unknown')}</span>`).join('')
+      : '<span class="conv-tag scenario-unknown">unclassified</span>';
+    const reviewBadge = s.needs_human_review ? '<span class="conv-tag review">⚠ revue CGP</span>' : '';
 
     return `
-      <tr>
-        <td><span class="rating-chip ${chipClass}">${chipIcon}</span></td>
-        <td><span class="cat-chip ${catClass}">${escapeHtml(fb.category || 'other')}</span></td>
-        <td class="msg-cell">
-          ${questionText}
-          ${message}
-        </td>
-        <td class="meta-cell">
-          ${event.scenario_key ? `<div><span class="id">scenario</span>${escapeHtml(event.scenario_key)}</div>` : ''}
-          ${event.source_count !== undefined ? `<div><span class="id">sources</span>${event.source_count}</div>` : ''}
-          ${event.needs_human_review ? `<div style="color:#d97706; font-weight:600;">⚠️ Revue CGP</div>` : ''}
-          ${event.latency_ms ? `<div><span class="id">latence</span>${event.latency_ms} ms</div>` : ''}
-        </td>
-        <td class="date-cell">${escapeHtml(date)}<br/><span class="t">${escapeHtml(time)}</span></td>
-      </tr>
+      <div class="conv-row" data-sid="${escapeHtml(s.session_id)}">
+        <div class="conv-date">
+          <strong>${escapeHtml(started.date)}</strong>
+          ${escapeHtml(started.time)}
+        </div>
+        <div class="conv-topic">
+          <div class="conv-question">${escapeHtml(question)}</div>
+          <div class="conv-scenarios">${scenarioChips}${reviewBadge}</div>
+        </div>
+        <div class="conv-metrics">
+          <div><strong>${s.turns}</strong> tour${s.turns > 1 ? 's' : ''}</div>
+          <div>${escapeHtml(duration)}</div>
+        </div>
+        <div class="conv-fb">
+          ${fbUp > 0 ? `<span class="fb-chip up">${fbUp} 👍</span>` : ''}
+          ${fbDown > 0 ? `<span class="fb-chip down">${fbDown} 👎</span>` : ''}
+          ${fbUp === 0 && fbDown === 0 ? '<span style="color:var(--faint);font-size:11px;">—</span>' : ''}
+        </div>
+      </div>
     `;
   }
 
+  // ========== SESSION DETAIL ==========
+  const detailOverlay = document.getElementById('detail-overlay');
+  const detailBody = document.getElementById('detail-body');
+  const detailTitle = document.getElementById('detail-title');
+  const detailSub = document.getElementById('detail-sub');
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  detailOverlay.addEventListener('click', (e) => { if (e.target === detailOverlay) closeDetail(); });
+
+  async function openSession(sid) {
+    detailTitle.textContent = "Chargement…";
+    detailSub.textContent = sid.slice(0, 8) + "…";
+    detailBody.innerHTML = '<div class="loading">Chargement…</div>';
+    detailOverlay.classList.add('active');
+
+    try {
+      const data = await call(`?action=session&session_id=${encodeURIComponent(sid)}`);
+      const events = data.events || [];
+      const sessionRow = allSessions.find(s => s.session_id === sid);
+      detailTitle.textContent = (sessionRow?.topic_snippet || "Session").slice(0, 80);
+      const started = fmtDate(events[0]?.created_at);
+      detailSub.textContent = `${events.length} tour${events.length > 1 ? 's' : ''} · débutée le ${started.full} · session ${sid.slice(0, 8)}`;
+
+      if (events.length === 0) {
+        detailBody.innerHTML = '<div class="empty-state"><h3>Session vide</h3><p>Aucune requête enregistrée.</p></div>';
+        return;
+      }
+
+      detailBody.innerHTML = events.map((e, idx) => {
+        const d = fmtDate(e.created_at);
+        const scenario = e.scenario_key || 'unknown';
+        const fb = e.feedback;
+        let fbHtml = '';
+        if (fb) {
+          const icon = fb.rating >= 4 ? '👍' : fb.rating <= 2 ? '👎' : '·';
+          fbHtml = `<div class="turn-fb">${icon} <strong>${escapeHtml(fb.category || 'feedback')}</strong>${fb.message ? ' · ' + escapeHtml(fb.message) : ''}</div>`;
+        }
+        return `
+          <div class="turn">
+            <div class="turn-head">
+              <strong>Tour ${idx + 1}</strong>
+              <span class="dot"></span>
+              <span>${escapeHtml(d.full)}</span>
+            </div>
+            <div class="turn-q">${escapeHtml(e.question_text || '(question non enregistrée)')}</div>
+            <div class="turn-meta">
+              <span>${escapeHtml(scenario)}</span>
+              <span>${e.source_count} source${e.source_count > 1 ? 's' : ''}</span>
+              ${e.latency_ms ? `<span>${e.latency_ms}ms</span>` : ''}
+              ${e.needs_human_review ? '<span style="color:var(--warn);">⚠ revue CGP</span>' : ''}
+            </div>
+            ${fbHtml}
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      detailBody.innerHTML = '<div class="empty-state"><h3>Erreur</h3><p>' + escapeHtml(e.message) + '</p></div>';
+    }
+  }
+  function closeDetail() { detailOverlay.classList.remove('active'); }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
+
+  // search convs
+  let searchTimer;
+  document.getElementById('search-convs').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadConversations(e.target.value.trim()), 250);
+  });
+  document.getElementById('refresh-convs').addEventListener('click', () => loadConversations(document.getElementById('search-convs').value.trim()));
+
+  // ========== FEEDBACKS ==========
+  async function loadFeedbacks() {
+    const loading = document.getElementById('fb-loading');
+    const table = document.getElementById('fb-table');
+    const body = document.getElementById('fb-body');
+    const empty = document.getElementById('fb-empty');
+    loading.style.display = 'block';
+    table.style.display = 'none';
+    empty.style.display = 'none';
+    try {
+      const data = await call('?action=list&limit=200');
+      const fbs = data.feedbacks || [];
+      document.getElementById('count-feedbacks').textContent = fbs.length;
+      loading.style.display = 'none';
+      if (fbs.length === 0) { empty.style.display = 'block'; return; }
+      body.innerHTML = fbs.map(fb => {
+        const rating = fb.rating || 0;
+        const icon = rating >= 4 ? '👍' : rating <= 2 ? '👎' : '·';
+        const chipClass = rating >= 4 ? 'up' : rating <= 2 ? 'down' : 'mid';
+        const d = fmtDate(fb.created_at);
+        const q = fb.event?.question_text;
+        const scenario = fb.event?.scenario_key || '—';
+        return `
+          <tr>
+            <td><span class="rating-chip ${chipClass}">${icon}</span></td>
+            <td><span class="cat-chip">${escapeHtml(fb.category || 'other')}</span></td>
+            <td>
+              ${q ? `<div class="fb-cell-question">« ${escapeHtml(q)} »</div>` : ''}
+              <div>${escapeHtml(fb.message || '') || '<span style="color:var(--faint);font-size:12px;">Pas de commentaire</span>'}</div>
+            </td>
+            <td><span class="conv-tag">${escapeHtml(scenario)}</span></td>
+            <td style="color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;">${escapeHtml(d.date)}<br/>${escapeHtml(d.time)}</td>
+          </tr>
+        `;
+      }).join('');
+      table.style.display = 'table';
+    } catch (e) {
+      loading.style.display = 'none';
+      if (e.message === "unauthorized") showLogin("Session expirée.");
+    }
+  }
+  document.getElementById('refresh-fb').addEventListener('click', loadFeedbacks);
+
+  // ========== STATS ==========
+  async function loadStats() {
+    try {
+      const s = await call('?action=stats');
+      document.getElementById('s-total').textContent = s.total ?? '—';
+      document.getElementById('s-positive').textContent = s.positive ?? '—';
+      document.getElementById('s-negative').textContent = s.negative ?? '—';
+      document.getElementById('s-avg').textContent = s.avgRating || '—';
+      document.getElementById('s-queries').textContent = s.totalQueries ?? '—';
+      document.getElementById('s-rate').textContent = (s.feedbackRate || 0) + ' %';
+      document.getElementById('s-review').textContent = '—';
+      document.getElementById('s-last').textContent = new Date().toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' });
+      renderChart(s.byDay || {});
+    } catch (e) {
+      if (e.message === "unauthorized") showLogin("Session expirée.");
+    }
+  }
   function renderChart(byDay) {
     const chart = document.getElementById('chart');
     chart.innerHTML = '';
@@ -574,93 +1057,34 @@
     for (let i = 29; i >= 0; i -= 1) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
-      days.push({ key, day: d.getDate(), month: d.getMonth() + 1 });
+      days.push({ key: d.toISOString().slice(0, 10), day: d.getDate(), month: d.getMonth() + 1 });
     }
-
     let maxVal = 0;
-    for (const k in byDay) {
-      const v = (byDay[k].up || 0) + (byDay[k].down || 0);
-      if (v > maxVal) maxVal = v;
-    }
+    for (const k in byDay) { const v = (byDay[k].up || 0) + (byDay[k].down || 0); if (v > maxVal) maxVal = v; }
     maxVal = Math.max(maxVal, 1);
-
     for (const d of days) {
       const b = byDay[d.key] || { up: 0, down: 0 };
-      const upH   = (b.up / maxVal) * 100;
+      const upH = (b.up / maxVal) * 100;
       const downH = (b.down / maxVal) * 100;
       const bar = document.createElement('div');
       bar.className = 'chart-bar';
-      bar.innerHTML = `
-        <div class="stack">
-          <div class="up-bar" style="height:${upH}%;" title="${b.up} 👍 le ${d.day}/${d.month}"></div>
-          <div class="down-bar ${b.up ? 'has-up' : ''}" style="height:${downH}%;" title="${b.down} 👎 le ${d.day}/${d.month}"></div>
-        </div>
-        <div class="lbl">${d.day}/${d.month}</div>
-      `;
+      bar.innerHTML = `<div class="stack"><div class="up-bar" style="height:${upH}%;" title="${b.up} 👍 le ${d.day}/${d.month}"></div><div class="down-bar" style="height:${downH}%;" title="${b.down} 👎 le ${d.day}/${d.month}"></div></div><div class="lbl">${d.day}/${d.month}</div>`;
       chart.appendChild(bar);
     }
   }
 
-  async function loadStats() {
-    try {
-      const data = await callAdmin("?action=stats");
-      document.getElementById('s-total').textContent    = data.total;
-      document.getElementById('s-positive').textContent = data.positive;
-      document.getElementById('s-negative').textContent = data.negative;
-      document.getElementById('s-rate').textContent     = data.feedbackRate + " %";
-      document.getElementById('s-avg').textContent      = data.avgRating || "—";
-      document.getElementById('s-queries').textContent  = data.totalQueries;
-      renderChart(data.byDay || {});
-    } catch (e) {
-      if (e.message === "unauthorized") { showLogin("Token invalide."); }
-    }
-  }
-
-  async function loadFeedbacks() {
-    loadingEl.style.display = 'block';
-    tableEl.style.display = 'none';
-    emptyEl.style.display = 'none';
-
-    const rating = document.getElementById('f-rating').value;
-    const category = document.getElementById('f-category').value;
-    const params = new URLSearchParams({ action: 'list', limit: '200' });
-    if (rating) params.set('rating', rating);
-    if (category) params.set('category', category);
-
-    try {
-      const data = await callAdmin("?" + params.toString());
-      const rows = (data.feedbacks || []).map(renderRow).join("");
-      tableBody.innerHTML = rows;
-      loadingEl.style.display = 'none';
-      if (rows) {
-        tableEl.style.display = 'table';
-      } else {
-        emptyEl.style.display = 'block';
-      }
-      const now = new Date();
-      lastRefreshEl.textContent = `Mis à jour à ${now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}`;
-    } catch (e) {
-      loadingEl.style.display = 'none';
-      if (e.message === "unauthorized") { showLogin("Token invalide."); }
-      else { emptyEl.innerHTML = `<h3>Erreur</h3><p>${escapeHtml(e.message)}</p>`; emptyEl.style.display = 'block'; }
-    }
-  }
-
-  async function loadAll() {
-    await Promise.all([loadStats(), loadFeedbacks()]);
-  }
-
+  // ========== AUTH FLOW ==========
   function showLogin(errorMsg) {
     loginOverlay.style.display = 'grid';
-    appHeader.style.display = 'none';
-    appMain.style.display = 'none';
+    app.classList.remove('ready');
     if (errorMsg) { loginError.textContent = errorMsg; loginError.classList.add('show'); }
   }
   function showApp() {
     loginOverlay.style.display = 'none';
-    appHeader.style.display = 'flex';
-    appMain.style.display = 'block';
+    app.classList.add('ready');
+    loadConversations();
+    loadFeedbacks();
+    loadStats();
   }
 
   loginForm.addEventListener('submit', async (e) => {
@@ -670,9 +1094,8 @@
     setToken(token);
     loginError.classList.remove('show');
     try {
-      await callAdmin("?action=stats");
+      await call('?action=stats');
       showApp();
-      loadAll();
     } catch (err) {
       clearToken();
       loginError.textContent = err.message === "unauthorized" ? "Token invalide." : "Erreur réseau.";
@@ -680,29 +1103,15 @@
     }
   });
 
-  logoutBtn.addEventListener('click', () => {
-    clearToken();
-    showLogin();
-  });
-
-  refreshBtn.addEventListener('click', loadAll);
-  document.getElementById('f-rating').addEventListener('change', loadFeedbacks);
-  document.getElementById('f-category').addEventListener('change', loadFeedbacks);
+  logoutBtn.addEventListener('click', () => { clearToken(); showLogin(); });
 
   // Auto-login si token déjà présent
   (async () => {
     if (getToken()) {
-      try {
-        await callAdmin("?action=stats");
-        showApp();
-        loadAll();
-      } catch {
-        clearToken();
-        showLogin();
-      }
+      try { await call('?action=stats'); showApp(); }
+      catch { clearToken(); showLogin(); }
     }
   })();
 </script>
-
 </body>
 </html>
