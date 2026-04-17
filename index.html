@@ -156,6 +156,19 @@
     to   { transform: rotate(360deg); }
   }
 
+  .scope-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-bottom: 16px;
+  }
+
   .heading {
     font-size: 38px;
     font-weight: 700;
@@ -166,13 +179,14 @@
   }
 
   .subtitle {
-    margin-top: 20px;
+    margin-top: 16px;
     font-size: 15.5px;
     color: #6b7280;
     text-align: center;
-    line-height: 1.55;
-    max-width: 540px;
+    line-height: 1.6;
+    max-width: 580px;
   }
+  .subtitle strong { color: #1f2937; font-weight: 600; }
 
   .composer {
     margin-top: 36px;
@@ -295,6 +309,7 @@
   .chat-view.active { display: flex; }
   .main.chat-mode { padding-top: 24px; }
   .main.chat-mode .sphere-wrap,
+  .main.chat-mode .scope-badge,
   .main.chat-mode .heading,
   .main.chat-mode .subtitle,
   .main.chat-mode .suggestions { display: none; }
@@ -868,8 +883,9 @@
         </svg>
       </div>
 
+      <div class="scope-badge">Assistant fiscal spécialisé IR 2026 · revenus 2025</div>
       <h1 class="heading">Comment puis-je vous aider ?</h1>
-      <p class="subtitle">Je suis là pour vous écouter, comprendre votre situation fiscale<br/>et vous apporter des réponses claires et sourcées.</p>
+      <p class="subtitle">Je vous accompagne sur votre déclaration pour les situations de <strong>handicap, invalidité, tutelle, curatelle et aidants</strong>.<br/>Je réponds à partir des sources officielles (BOFiP, impots.gouv, Service-Public, Légifrance).</p>
 
       <!-- Composer -->
       <div class="composer">
@@ -1185,21 +1201,16 @@
       const hasSubstance = sources.length > 0 || boxes.length > 0 || checks.length > 0 || docs.length > 0;
       const lightMode    = !hasSubstance;
 
-      // --- Diagnostic + chip scénario (uniquement si réponse substantielle)
-      const scenarioChip = (!lightMode && scenario.title)
-        ? `<span class="scenario-chip ${riskClass(scenario.riskLevel)}">
-             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6z"/></svg>
-             ${escapeHtml(riskLabel(scenario.riskLevel))}
-           </span>` : "";
-
+      // --- Diagnostic uniquement (badge "Risque élevé" retiré de l'UI :
+      //     il était ambigu côté utilisateur, la logique reste côté serveur
+      //     via needsHumanReview pour la file rag_review_queue).
       const showDiagnostic = !lightMode && answer.diagnostic;
-      const diagnosticHtml = (showDiagnostic || scenarioChip)
+      const diagnosticHtml = showDiagnostic
         ? `<div style="margin-bottom:14px;">
-             ${scenarioChip}
-             ${showDiagnostic ? `<span class="diagnostic">
+             <span class="diagnostic">
                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                ${escapeHtml(answer.diagnostic)}
-             </span>` : ""}
+             </span>
            </div>` : "";
 
       // --- Réponse : markdown -> HTML propre (gras, paragraphes), pas d'astérisques affichés.
