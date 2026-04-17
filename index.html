@@ -225,16 +225,32 @@
   .main {
     flex: 1;
     overflow-y: auto;
-    padding: 48px 32px;
+    padding: 78px 32px 48px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
     background:
-      radial-gradient(800px 400px at 50% -20%, rgba(10,10,10,0.02), transparent 60%),
-      var(--bg);
+      radial-gradient(1100px 520px at 50% -10%, rgba(10,10,10,0.035), transparent 55%),
+      radial-gradient(600px 400px at 85% 10%, rgba(10,10,10,0.02), transparent 60%),
+      linear-gradient(180deg, #f8f7f5 0%, var(--bg) 45%);
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
+  /* Subtle grid pattern derrière le hero (seulement visible en welcome state) */
+  .main::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(10,10,10,0.035) 1px, transparent 0);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(600px 400px at 50% 18%, black 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(600px 400px at 50% 18%, black 0%, transparent 70%);
+    pointer-events: none;
+    opacity: 0.8;
+  }
+  .main.chat-mode::before { display: none; }
   .main::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
   .shell {
@@ -250,43 +266,85 @@
   /* =========== HERO =========== */
   .hero {
     text-align: center;
-    margin-bottom: 36px;
+    margin-bottom: 34px;
     animation: slideUp .65s var(--ease) both;
+    position: relative;
+    z-index: 1;
   }
-  .hero-hello {
-    font-size: 18px;
-    font-weight: 400;
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px 5px 9px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    font-size: 11px;
     color: var(--muted);
-    letter-spacing: -0.005em;
-    margin-bottom: 4px;
+    background: var(--bg-card);
+    margin-bottom: 16px;
+    letter-spacing: -0.003em;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(10,10,10,0.02);
+  }
+  .hero-badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--ink);
+    animation: pulse 2.6s var(--ease) infinite;
   }
   .hero-title {
-    font-size: 48px;
+    font-size: 46px;
     font-weight: 500;
     color: var(--ink);
     letter-spacing: -0.035em;
     line-height: 1.05;
     font-variation-settings: "opsz" 32;
   }
-  .hero-kicker {
+  .hero-sub {
+    font-size: 15.5px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: -0.008em;
+    margin-top: 14px;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.55;
+  }
+  .hero-sub strong { color: var(--ink); font-weight: 500; }
+  .hero-sources {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    padding: 5px 12px 5px 8px;
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-pill);
-    font-size: 11.5px;
-    color: var(--muted);
-    background: var(--bg-card);
-    letter-spacing: 0;
+    gap: 14px;
+    margin-top: 22px;
+    font-size: 10.5px;
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
   }
-  .hero-kicker-dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--ink);
-    animation: pulse 2.6s var(--ease) infinite;
+  .hero-sources-lbl {
+    position: relative;
+    padding-right: 14px;
   }
+  .hero-sources-lbl::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 10px;
+    background: var(--hairline-strong);
+  }
+  .hero-sources ul {
+    display: inline-flex;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .hero-sources li { color: var(--muted); }
 
   /* =========== COMPOSER (Gemini-inspired, plus minimal) =========== */
   .composer {
@@ -534,6 +592,207 @@
     border-radius: var(--radius-md);
   }
   .intro-card + .msg-assistant { margin-top: -4px; }
+
+  /* =========== BOXES (cases/formulaires en blocs visuels) =========== */
+  .boxes-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--hairline);
+  }
+  .box-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: border-color .2s, background .2s;
+  }
+  .box-card:hover { border-color: var(--hairline-strong); background: var(--bg-card); }
+  .box-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .box-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 4px 4px 10px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+  .box-chip-hint {
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .box-chip-code {
+    font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 5px;
+    letter-spacing: 0;
+  }
+  .box-form {
+    font-size: 11.5px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: 0;
+    padding: 2px 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: 5px;
+  }
+  .box-card-body {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
+  .box-card-body strong { color: var(--ink); font-weight: 600; }
+
+  /* =========== FOLLOW-UPS (chips cliquables) =========== */
+  .followups {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--hairline);
+  }
+  .followups-label {
+    font-size: 10.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .followups-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .followup-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .18s var(--ease);
+    letter-spacing: -0.003em;
+    text-align: left;
+    max-width: 100%;
+  }
+  .followup-chip:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lift);
+  }
+  .followup-chip:hover:not(:disabled) svg { transform: translateX(2px); }
+  .followup-chip svg {
+    width: 13px; height: 13px;
+    stroke-width: 1.8;
+    transition: transform .18s var(--ease);
+    color: var(--faint);
+    flex-shrink: 0;
+  }
+  .followup-chip:hover:not(:disabled) svg { color: #fff; }
+  .followup-chip.used { opacity: 0.5; cursor: default; pointer-events: none; }
+  .followup-chip.selected { background: var(--ink); color: #fff; border-color: var(--ink); opacity: 1; }
+  .followup-chip.selected svg { color: #fff; }
+
+  /* =========== TOP HEADER (brand + admin) =========== */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(250,250,249,0.95) 0%, rgba(250,250,249,0) 100%);
+    pointer-events: none;
+  }
+  .topbar > * { pointer-events: auto; }
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .topbar-mark {
+    width: 26px; height: 26px;
+    display: grid; place-items: center;
+    border-radius: 7px;
+    background: var(--ink);
+    color: #fff;
+  }
+  .topbar-mark svg { width: 13px; height: 13px; stroke-width: 1.8; }
+  .topbar-brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .topbar-brand-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.012em;
+  }
+  .topbar-brand-sub {
+    font-size: 10.5px;
+    color: var(--faint);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-top: 1px;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .topbar-byline {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: -0.003em;
+  }
+  .topbar-byline em {
+    font-style: normal;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .topbar-admin {
+    display: grid;
+    place-items: center;
+    width: 30px; height: 30px;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    color: var(--muted);
+    transition: all .15s;
+    text-decoration: none;
+    background: var(--bg-card);
+  }
+  .topbar-admin:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .topbar-admin svg { width: 13px; height: 13px; stroke-width: 1.6; }
+  @media (max-width: 640px) {
+    .topbar { padding: 10px 16px; }
+    .topbar-byline { display: none; }
+    .topbar-brand-sub { display: none; }
+  }
 
   .answer-text { font-size: 14.5px; color: var(--ink-soft); line-height: 1.65; letter-spacing: -0.005em; }
   .answer-text > *:first-child { margin-top: 0 !important; }
@@ -1000,16 +1259,53 @@
     <!-- ============ APP COLUMN ============ -->
     <div class="app">
 
+      <!-- ============ TOP BAR (brand + admin) ============ -->
+      <div class="topbar">
+        <div class="topbar-brand">
+          <div class="topbar-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 19V5h5.2c3 0 5 1.8 5 4.5S15.2 14 12.2 14H9"/>
+              <circle cx="18" cy="6" r="1.2" fill="currentColor" stroke="none"/>
+            </svg>
+          </div>
+          <div class="topbar-brand-text">
+            <div class="topbar-brand-name">Pôle Handicap</div>
+            <div class="topbar-brand-sub">Assistant fiscal · sources officielles</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-byline">par <em>Brice &amp; Morgan</em></div>
+          <a class="topbar-admin" href="admin.html" aria-label="Console admin" title="Console admin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 9l3 7h10l3-7-4.5 3.5L12 6l-3.5 6.5L4 9z"/>
+              <path d="M7 19h10"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
       <!-- ============ MAIN ============ -->
       <main class="main">
         <div class="shell">
           <!-- Hero (masqué en chat-mode) -->
           <div class="hero">
-            <div class="hero-hello">Bonjour</div>
+            <div class="hero-badge">
+              <span class="hero-badge-dot"></span>
+              Handicap · Invalidité · Tutelle · Aidants
+            </div>
             <h1 class="hero-title">Par où commencer ?</h1>
-            <div class="hero-kicker">
-              <span class="hero-kicker-dot"></span>
-              Handicap · Invalidité · Tutelle · Curatelle · Aidants
+            <p class="hero-sub">
+              Outil d'accompagnement à la <strong>déclaration IR 2026</strong>,
+              basé exclusivement sur les textes officiels. Réponses sourcées, cases précises.
+            </p>
+            <div class="hero-sources">
+              <span class="hero-sources-lbl">Sources officielles</span>
+              <ul>
+                <li>BOFiP</li>
+                <li>impots.gouv</li>
+                <li>Service-Public</li>
+                <li>Légifrance</li>
+              </ul>
             </div>
           </div>
 
@@ -1338,13 +1634,13 @@
       const requestId  = payload.requestId || "";
       const scope      = `req-${requestId.slice(0,8) || Math.random().toString(36).slice(2,8)}`;
 
-      // RÈGLE : on n'affiche JAMAIS les sections structurées (Cases / Points / Justificatifs).
-      // Toute l'info utile doit être intégrée directement dans le texte conversationnel.
-      // Les champs restent dans les données pour la traçabilité admin mais ne sont jamais rendus.
-      const boxes   = [];
-      const checks  = [];
-      const docs    = [];
-      const missing = [];
+      // RÈGLE : on affiche maintenant les CASES (boxes_or_forms) et les FOLLOW-UPS
+      // en cartes visuelles dédiées. Les checks et justificatifs restent en backend-only.
+      const boxes     = Array.isArray(answer.boxes_or_forms) ? answer.boxes_or_forms : [];
+      const followUps = Array.isArray(answer.follow_ups) ? answer.follow_ups : [];
+      const checks    = [];
+      const docs      = [];
+      const missing   = [];
 
       // Mode toujours "léger" : la réponse est toujours conversationnelle.
       const hasSubstance = false;
@@ -1376,17 +1672,46 @@
       const canAnswer = answer.can_answer === true;
       const clarificationsHtml = "";
 
-      // --- Cases / formulaires (boxes_or_forms = [{ label, condition, source_ids }])
+      // --- Cases / formulaires : extraction intelligente du code case + formulaire + description
+      function extractCaseCode(label) {
+        // Cherche "case X" ou "Case X" dans le label et retourne le code court
+        const m = String(label).match(/case\s+([A-Z0-9]{1,4})/i);
+        return m ? m[1].toUpperCase() : null;
+      }
+      function extractFormName(label) {
+        // Cherche "formulaire 2042 [RICI|K|IR]" dans le label
+        const m = String(label).match(/formulaire\s+(\d{4}[\s\-]*(?:RICI|K|IR|C)?)/i);
+        return m ? m[1].trim().replace(/\s+/g, ' ') : null;
+      }
       const boxesHtml = boxes.length
-        ? `<div class="answer-section"><h4>Cases et formulaires</h4>
+        ? `<div class="boxes-grid">
              ${boxes.map(b => {
                const label = b.label || "";
                const cond  = b.condition || "";
+               const code  = extractCaseCode(label);
+               const form  = extractFormName(label);
                return `<div class="box-card">
-                 <div class="box-label">${escapeHtml(label)}</div>
-                 <div class="box-condition">${stripCitations(cond)}</div>
+                 <div class="box-card-head">
+                   ${code ? `<div class="box-chip"><span class="box-chip-hint">Case</span><span class="box-chip-code">${escapeHtml(code)}</span></div>` : `<div class="box-chip"><span class="box-chip-code">${escapeHtml(label)}</span></div>`}
+                   ${form ? `<div class="box-form">${escapeHtml(form)}</div>` : ''}
+                 </div>
+                 ${cond ? `<div class="box-card-body">${stripCitations(cond)}</div>` : ''}
                </div>`;
              }).join("")}
+           </div>` : "";
+
+      // --- Follow-ups (chips cliquables sous la réponse)
+      const followUpsHtml = followUps.length
+        ? `<div class="followups">
+             <div class="followups-label">Continuer</div>
+             <div class="followups-row">
+               ${followUps.map((f, i) => `
+                 <button type="button" class="followup-chip" data-query="${escapeHtml(f.query || '')}" data-label="${escapeHtml(f.label || '')}">
+                   <span>${escapeHtml(f.label || '')}</span>
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                 </button>
+               `).join('')}
+             </div>
            </div>` : "";
 
       // --- Points à vérifier (required_checks)
@@ -1429,8 +1754,9 @@
           <div class="answer-card" style="flex:1;">
             ${diagnosticHtml}
             ${answerHtml}
-            ${clarificationsHtml}
             ${boxesHtml}
+            ${followUpsHtml}
+            ${clarificationsHtml}
             ${checksHtml}
             ${docsHtml}
             ${sourcesHtml}
@@ -1440,6 +1766,22 @@
           </div>
         </div>`;
       messagesEl.appendChild(card);
+
+      // --- Listeners follow-ups : click → envoyer la query au RAG en mode guidé
+      card.querySelectorAll('.followup-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const q = btn.dataset.query;
+          const lbl = btn.dataset.label;
+          if (!q) return;
+          // Désactive tous les follow-ups de cette réponse pour éviter les double-clics
+          card.querySelectorAll('.followup-chip').forEach(b => { b.disabled = true; b.classList.add('used'); });
+          btn.classList.add('selected');
+          // Affiche la sélection utilisateur (label court et propre) sous forme de message user
+          renderUserMessage(lbl || q);
+          // Envoie la vraie query au RAG
+          sendQuestion(q, { guided: true, path: 'followup' });
+        });
+      });
 
       // --- Listener : clic sur une clarification → préremplit le composer
       card.querySelectorAll('.clar-item').forEach(el => {
