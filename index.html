@@ -454,6 +454,20 @@
   .main.chat-mode .composer { order: 2; margin-top: 8px; width: 100%; }
   .main.chat-mode .chat-view { order: 1; width: 100%; }
 
+  /* ============================================================
+     ÉTAT ONBOARDING : tant qu'aucun .msg-user n'existe
+     1. Composer caché
+     2. Welcome + choice cards centrés verticalement
+     ============================================================ */
+  .main.chat-mode:not(:has(.msg-user)) .composer { display: none; }
+  .main.chat-mode:not(:has(.msg-user)) .messages {
+    justify-content: center;
+    min-height: 100%;
+  }
+  .main.chat-mode:not(:has(.msg-user)) .shell {
+    justify-content: center;
+  }
+
   .chat-view {
     display: none;
     flex: 1;
