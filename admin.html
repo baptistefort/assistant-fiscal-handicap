@@ -583,17 +583,189 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   .kpis, .two-col, .chart-wrap, .comments-list { animation: fadeIn .4s var(--ease) both; }
 
-  /* ===== Responsive ===== */
+  /* ============================================================
+     RESPONSIVE — Tablet ≤ 1000px (minor, desktop-ish)
+     ============================================================ */
   @media (max-width: 1000px) {
+    .main-area { padding: 36px 40px 50px; }
     .kpis { grid-template-columns: repeat(2, 1fr); }
     .kpi { border-right: none; border-bottom: 1px solid var(--hairline); }
+    .kpi:nth-child(3), .kpi:nth-child(4) { border-bottom: none; }
+    .kpi:nth-child(2n+1) { border-right: 1px solid var(--hairline); }
     .two-col { grid-template-columns: 1fr; gap: 30px; }
   }
-  @media (max-width: 760px) {
+
+  /* ============================================================
+     MOBILE ≤ 780px — RESTRUCTURATION STRATÉGIQUE
+     Sections: login / sidebar / topbar / kpis / chart /
+               two-col / comments / panel
+     ============================================================ */
+  @media (max-width: 780px) {
+
+    /* ══════════ LOGIN ══════════ */
+    .login-card {
+      width: 100%;
+      max-width: calc(100vw - 32px);
+      padding: 28px 22px 24px;
+      border-radius: 14px;
+    }
+    .login-card h1 { font-size: 17px; }
+    .login-card p { font-size: 12px; }
+
+    /* ══════════ APP LAYOUT : sidebar masquée, main full-width ══════════ */
     .app.ready { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    .main-area { padding: 24px 20px; }
-    .kpi-val { font-size: 24px; }
+
+    .main-area { padding: 20px 16px 40px; }
+    .container { max-width: 100%; }
+
+    /* ══════════ TOPBAR : stack vertical propre ══════════ */
+    .topbar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      padding-bottom: 16px;
+      margin-bottom: 22px;
+    }
+    .topbar h1 { font-size: 22px; }
+    .topbar h1 span { display: none; }
+    .topbar-right {
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .topbar-right::-webkit-scrollbar { display: none; }
+    .live { font-size: 10.5px; padding: 4px 9px; white-space: nowrap; flex-shrink: 0; }
+    .period { flex-shrink: 0; }
+    .period button { padding: 5px 10px; font-size: 11px; }
+    .refresh { flex-shrink: 0; }
+
+    /* ══════════ KPIs : 2×2 compact ══════════ */
+    .kpis { margin-bottom: 28px; }
+    .kpi { padding: 16px 14px 14px; }
+    .kpi-lbl { font-size: 10px; letter-spacing: 0.06em; }
+    .kpi-val {
+      font-size: 24px;
+      letter-spacing: -0.025em;
+      margin-top: 6px;
+    }
+    .kpi-delta { font-size: 10.5px; margin-top: 5px; }
+    .kpi-delta svg { width: 9px; height: 9px; }
+    .kpi-spark {
+      right: 12px; top: 14px;
+      width: 44px; height: 18px;
+      opacity: 0.55;
+    }
+
+    /* ══════════ SECTION HEAD ══════════ */
+    .section-head { margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
+    .section-head h2 { font-size: 11px; letter-spacing: 0.08em; }
+    .section-head .tag { font-size: 10.5px; }
+    .divider { margin: 30px 0; }
+
+    /* ══════════ CHART ══════════ */
+    .chart-svg { height: 210px; }
+    .chart-legend { font-size: 10.5px; gap: 12px; flex-wrap: wrap; }
+    .chart-label { font-size: 9px; }
+    .chart-tooltip {
+      min-width: 140px;
+      max-width: calc(100vw - 32px);
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+    .tt-date { font-size: 10px; }
+    .tt-row { font-size: 11px; }
+
+    /* ══════════ TWO-COL (déjà 1 col ici) ══════════ */
+    .two-col { gap: 24px; }
+    .bar-list { gap: 10px; }
+    .bar-hd { font-size: 12px; }
+    .bar-hd .n { font-size: 11px; }
+
+    /* ══════════ COMMENTS ══════════ */
+    .comments-hd {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .comments-hd h2 { font-size: 11px; }
+    .comments-hd .filt {
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-wrap: nowrap;
+    }
+    .comments-hd .filt::-webkit-scrollbar { display: none; }
+    .comments-hd .filt button {
+      padding: 5px 10px;
+      font-size: 10.5px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    /* Comment rows: stack plus compact, date en bas pour éviter squeeze */
+    .comment {
+      grid-template-columns: 24px 1fr;
+      grid-template-rows: auto auto;
+      gap: 10px;
+      padding: 14px 8px;
+      margin: 0 -8px;
+    }
+    .comment-icon { width: 24px; height: 24px; font-size: 11px; margin-top: 0; }
+    .comment-body { grid-column: 2; min-width: 0; }
+    .comment-date {
+      grid-column: 1 / -1;
+      font-size: 10.5px;
+      margin-top: 2px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--hairline);
+      padding-left: 34px;
+    }
+    .comment-q { font-size: 11.5px; }
+    .comment-msg { font-size: 12.5px; line-height: 1.45; }
+    .comment-cat { font-size: 10px; }
+
+    /* ══════════ DETAIL PANEL : sheet full-width ══════════ */
+    .panel {
+      width: 100vw;
+      max-width: 100vw;
+      border-left: none;
+    }
+    .panel-hd { padding: 16px 18px; }
+    .panel-title h3 { font-size: 13.5px; }
+    .panel-title .s { font-size: 10.5px; }
+    .panel-body { padding: 16px 18px 32px; }
+    .turn { padding: 12px 0; }
+    .turn-hd { font-size: 10px; gap: 6px; }
+    .turn-q { font-size: 13px; }
+    .turn-meta span { font-size: 10px; padding: 2px 6px; }
+    .turn-fb { padding: 8px 10px; font-size: 11.5px; }
+    .turn-fb .fb-hd { font-size: 10.5px; }
+  }
+
+  /* ============================================================
+     SMALL MOBILE ≤ 420px — tighter compressions
+     ============================================================ */
+  @media (max-width: 420px) {
+    .main-area { padding: 16px 14px 32px; }
+
+    .topbar { gap: 12px; margin-bottom: 18px; }
+    .topbar h1 { font-size: 20px; }
+
+    .kpi { padding: 14px 12px 12px; }
+    .kpi-val { font-size: 22px; }
+    .kpi-lbl { font-size: 9.5px; }
+    .kpi-delta { font-size: 10px; }
+    .kpi-spark { width: 36px; height: 16px; right: 10px; top: 12px; }
+
+    .chart-svg { height: 190px; }
+    .chart-label { font-size: 8.5px; }
+
+    .comment-msg { font-size: 12px; }
+    .comment-q { font-size: 11px; }
   }
 </style>
 </head>
