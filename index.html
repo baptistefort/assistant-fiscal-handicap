@@ -1504,8 +1504,8 @@
     /* --- Messages mobile (pleine largeur : avatar + spacer masqués) --- */
     .messages {
       flex: 1;
-      gap: 12px;
-      padding: 14px 12px 6px;
+      gap: 14px;
+      padding: 14px 16px 8px;
       overflow-y: auto;
       overflow-x: hidden;
       width: 100%;
@@ -1523,12 +1523,13 @@
     .msg-user .msg-bubble {
       padding: 10px 14px;
       font-size: 14px;
-      max-width: 86%;
-      border-radius: 16px 16px 4px 16px;
+      max-width: 78%;
+      border-radius: 18px 18px 4px 18px;
       letter-spacing: -0.004em;
       word-wrap: break-word;
       overflow-wrap: anywhere;
       min-width: 0;
+      box-sizing: border-box;
     }
     .msg-avatar { display: none; }
     /* Masque le spacer 32px devant la choice-grid et annule le gap du wrapper flex */
@@ -1597,15 +1598,22 @@
       letter-spacing: 0.04em;
     }
 
-    /* ========= CHOICE CARDS passées : fade subtil ========= */
+    /* ========= CAROUSEL D'HISTORIQUE : masquer une fois qu'une card est choisie =========
+       La bulle user en-dessous fait déjà office de trace/validation de la sélection.
+       Ça nettoie visuellement la conversation : pas de duplication, pas de bruit. */
+    .msg-assistant:has(.choice-grid .choice-card.selected) .choice-grid {
+      display: none !important;
+    }
+    /* On masque aussi la wrapper msg si son seul contenu était la carousel */
+    .msg-assistant:has(> div > .choice-grid .choice-card.selected):not(:has(.answer-card)) {
+      display: none !important;
+    }
+
+    /* Les cards disabled ne devraient plus apparaître (cf. règle au-dessus) mais au cas où */
     .choice-card:disabled:not(.selected),
     .choice-card.disabled:not(.selected) {
       opacity: 0.38;
       filter: saturate(0.5);
-    }
-    .choice-card.selected {
-      opacity: 1 !important;
-      filter: none !important;
     }
 
     /* --- Choice grid mobile : carrousel horizontal (style ChatGPT) --- */
