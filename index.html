@@ -1536,17 +1536,26 @@
     .msg-assistant > div > div[style*="width:32px"] { display: none; }
     .msg-assistant { gap: 6px; }
 
-    /* --- Welcome state : intro + cards groupés vers le bas (style ChatGPT) --- */
+    /* --- Welcome state : intro en haut + cards juste en dessous --- */
     .main.chat-mode:not(:has(.msg-user)) .messages {
-      justify-content: flex-end;
-      padding: 14px 12px 20px;
-      gap: 14px;
+      justify-content: flex-start;
+      padding: 16px 12px 12px;
+      gap: 12px;
     }
-    /* Intro transparente en welcome (comme ChatGPT : pas de bulle visible) */
+    /* Intro en bulle grise (style iMessage côté assistant) pour bien montrer que c'est le bot */
     .main.chat-mode:not(:has(.msg-user)) .intro-card {
-      background: transparent;
+      background: #f1f1f2;
       border: none;
-      padding: 6px 4px 2px;
+      padding: 12px 16px 14px;
+      border-radius: 18px 18px 18px 4px;
+      max-width: 90%;
+      flex: 0 1 auto !important;
+      width: auto !important;
+    }
+    .main.chat-mode:not(:has(.msg-user)) .intro-card .answer-text {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--ink-soft);
     }
 
     /* --- Answer / intro card mobile : ultra-compact --- */
