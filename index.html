@@ -1542,20 +1542,58 @@
       padding: 16px 12px 12px;
       gap: 12px;
     }
-    /* Intro en bulle grise (style iMessage côté assistant) pour bien montrer que c'est le bot */
-    .main.chat-mode:not(:has(.msg-user)) .intro-card {
-      background: #f1f1f2;
-      border: none;
-      padding: 12px 16px 14px;
-      border-radius: 18px 18px 18px 4px;
-      max-width: 90%;
+
+    /* ========= STYLE BULLE iMESSAGE (persistant, TOUTES les réponses bot) ========= */
+    /* Intro-card (nœuds de l'arbre : "Parfait. Quelle est votre situation ?") */
+    .intro-card {
+      background: #f0f0f2;
+      border: none !important;
+      padding: 11px 15px 13px;
+      border-radius: 18px 18px 18px 5px;
+      max-width: 92%;
       flex: 0 1 auto !important;
       width: auto !important;
+      box-shadow: none;
     }
-    .main.chat-mode:not(:has(.msg-user)) .intro-card .answer-text {
+    .intro-card .answer-text {
       font-size: 13.5px;
       line-height: 1.5;
       color: var(--ink-soft);
+    }
+    .intro-card .breadcrumb {
+      font-size: 10px;
+      opacity: 0.6;
+      margin-bottom: 5px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Answer-card (vraie réponse RAG avec contenu structuré) — bulle plus large */
+    .answer-card:not(.intro-card) {
+      background: #f0f0f2;
+      border: none;
+      padding: 14px 16px 15px;
+      border-radius: 18px 18px 18px 5px;
+      max-width: 96%;
+      flex: 0 1 auto !important;
+      width: auto !important;
+      font-size: 13.5px;
+      line-height: 1.55;
+      box-shadow: none;
+    }
+    .answer-card:not(.intro-card):hover { border-color: transparent; }
+
+    /* Breadcrumb "📍 CHEMIN" : plus compact sur mobile */
+    .breadcrumb { font-size: 10px !important; padding: 0 !important; margin-bottom: 6px; }
+
+    /* ========= CHOICE CARDS passées : fade subtil ========= */
+    .choice-card:disabled:not(.selected),
+    .choice-card.disabled:not(.selected) {
+      opacity: 0.38;
+      filter: saturate(0.5);
+    }
+    .choice-card.selected {
+      opacity: 1 !important;
+      filter: none !important;
     }
 
     /* --- Answer / intro card mobile : ultra-compact --- */
